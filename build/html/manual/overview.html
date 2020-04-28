@@ -1,0 +1,233 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>Overview &#8212; Actuator Doc  documentation</title>
+    <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <script id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+    <script src="../_static/jquery.js"></script>
+    <script src="../_static/underscore.js"></script>
+    <script src="../_static/doctools.js"></script>
+    <script src="../_static/language_data.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Key Concepts" href="key-concepts.html" />
+    <link rel="prev" title="Actuator User Manual and API Reference" href="../index.html" />
+   
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <div class="section" id="overview">
+<h1>Overview<a class="headerlink" href="#overview" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="intro">
+<h2>Intro<a class="headerlink" href="#intro" title="Permalink to this headline">¶</a></h2>
+<p>Actuator is focused on providing a toolset that supports the creation of Python-based models of application systems
+that not only can be used to start up instances of the modelled system, but to open up the model itself for other
+enterprise processes. Actuator’s perspective is that a model of a system has value beyond the bread-and-butter task
+of starting up a system, and so is structured to provide easy access to the information in the model, and to make it
+easy to integrate models with other systems in order to help automate the coordination of model data used in other
+enterprise processes.</p>
+<p>Actuator provides an end-to-end set of tools for spinning up
+systems in the cloud, from provisioning the infra, defining the logical roles
+in the system and the names that govern their operation,
+configuring the infra for the software that is to be run, and then
+executing that system’s code on the configured infra.</p>
+<p>It does this by providing facilities that allow a system to be described
+as a collection of <em>models</em> in a declarative fashion directly in Python
+code, in a manner similar to various declarative systems for ORMs
+(SQLAlchemy <em>declarative</em> being a prime example). Being in Python, these models:</p>
+<ul class="simple">
+<li><p>can be very flexible and dynamic in their composition</p></li>
+<li><p>can be integrated with other Python packages</p></li>
+<li><p>can be authored and browsed in existing IDEs</p></li>
+<li><p>can be debugged with standard tools</p></li>
+<li><p>can be inspected for auditing and other purposes</p></li>
+<li><p>and can be factored into collections of reusable sets of
+declarative components</p></li>
+</ul>
+<p>And while each model provides capabilties on their own, they can be
+inter-related to not only exchange information, but to allow instances
+of a model to tailor the content of other models.</p>
+<p>Actuator uses the Python <em>class</em> construct as the basis for defining a model, and
+the class’s contents serves as a logical description of the item being modeled; for
+instance a collection of infrastructure resources for a system. These
+model classes can have both static and dynamic aspects, allowing them to be used to describe systems
+that include fixed assets as well as dynamic cloud-based ones..</p>
+</div>
+<div class="section" id="the-four-models">
+<h2>The Four Models<a class="headerlink" href="#the-four-models" title="Permalink to this headline">¶</a></h2>
+<p>Actuator defines four models for fully describing a system, although it is possible to use Actuator with fewer models
+to handle various tasks. This further enhances Actuator’s flexibility in how it can be used and the tasks it can
+address. The models defined by Actuator are:</p>
+<div class="section" id="infrastructure-model">
+<h3>Infrastructure Model<a class="headerlink" href="#infrastructure-model" title="Permalink to this headline">¶</a></h3>
+<p>The infrastructure model, or <em>infra model</em>,
+defines all the infrastructure resources of a system and their
+inter-relationships. Infra models can have fixed resources that are
+always provisioned with each instance of the model class, as well as
+variable-sized resource containers that allow multiple copies of
+resources to be easily created on an instance-by-instance basis. The
+infra model also has facilities to define groups of resources that can
+be created as a whole, and an arbitrary number of copies of these groups
+can be created for each instance. References into the infra model can be
+held by other models, and these references can be subsequently evaluated
+against an instance of the infra model to extract data from that
+particular instance. For example, a namespace model may need the IP
+address from a particular server in an infra model, and so the namespace
+model may hold a reference into the infra model for the IP address
+attribute that yields the actual IP address of a provisioned server when
+an instance of that infra model is provisioned.</p>
+</div>
+<div class="section" id="namespace-model">
+<h3>Namespace Model<a class="headerlink" href="#namespace-model" title="Permalink to this headline">¶</a></h3>
+<p>The <em>namespace model</em> defines a hierarchical namespace based around system
+<em>roles</em> which defines all the names that are important to the
+configuration and run-time operation of a system. A role can be
+thought of as a software component of a system; for instance, a system
+might have a database role, an app server role, or a grid node role.
+Names in the namespace can be used for a variety of purposes, such as
+setting up environment variables, or establishing name-value pairs for
+processing template files such as scripts or properties files. The names
+in the namespace are associated with the namespace’s roles, and each
+system role’s view of the namespace is composed of any names specific to
+that role, plus the names that are defined higher up in the namespace
+hierarchy. Values for the names can be baked into the model, supplied at
+model class instantiation, by setting values on the model class
+instance, or can be acquired by resolving references to other models
+such as the infra model.</p>
+</div>
+<div class="section" id="configuration-model">
+<h3>Configuration Model<a class="headerlink" href="#configuration-model" title="Permalink to this headline">¶</a></h3>
+<p>The configuration model, or <em>config model</em>, defines all the tasks to perform on the system roles’
+infrastructure that make them ready to run the system’s executables. The
+config model defines tasks to be performed on the logical system
+roles of the namespace model, which in turn indicates what
+infrastructure is involved in the configuration tasks. The configuration
+model also captures task dependencies so that the configuration tasks
+are all performed in the proper order. Configuration models can also be
+treated as tasks and used within other configuration models.</p>
+<div class="section" id="execution-model">
+<h4>Execution Model<a class="headerlink" href="#execution-model" title="Permalink to this headline">¶</a></h4>
+<p>The execution model, or <em>exec model</em>, defines the actual processes to run for each system
+role named in the namespace model. Like with the configuration model,
+dependencies between the executables can be expressed so that a
+particular startup order can be enforced.</p>
+<p>Actuator then provides a number of support tools that can take instances
+of these models and processes their information, turning it into
+actions in the cloud. So for instance, an orchestrator can take an infra
+model instance and manage the process of provisioning the infra it
+describes, and another can marry that instance with a namespace to fully
+populate a namespace model instance so that the configurator can carry
+out configuration tasks, and so on.</p>
+</div>
+</div>
+</div>
+<div class="section" id="basic-operational-flow">
+<h2>Basic Operational Flow<a class="headerlink" href="#basic-operational-flow" title="Permalink to this headline">¶</a></h2>
+<p>Using Actuator generally involves the following steps:</p>
+<ol class="arabic simple">
+<li><p><em>Create the required models</em>. The infrastructure model can be used alone with no other models, but to
+use a configuration or execution model, you must also have a namespace model. Which you need depends on what you’re
+trying to accomplish.</p></li>
+<li><p><em>Create the appropriate proxy</em>. The provisioner proxy object performs two tasks: it holds the credentials used to
+communicate with particular cloud provider, and it also provides various factory methods to yield API objects that
+facilitate communication with the cloud’s API.</p></li>
+<li><p><em>Create instances of the models</em>. These are just Python classes, and so you create instances of them in the normal
+manner you would for instance creation.</p></li>
+<li><p><em>Create an orchestrator</em>, providing it the model instances and the proxy.</p></li>
+<li><p><em>Instruct the orchestrator to initiate the system instance</em> described by the models.</p></li>
+</ol>
+</div>
+</div>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../index.html">Actuator Doc</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Overview</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#intro">Intro</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#the-four-models">The Four Models</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#basic-operational-flow">Basic Operational Flow</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="key-concepts.html">Key Concepts</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../index.html">Documentation overview</a><ul>
+      <li>Previous: <a href="../index.html" title="previous chapter">Actuator User Manual and API Reference</a></li>
+      <li>Next: <a href="key-concepts.html" title="next chapter">Key Concepts</a></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2020, Incisive Technology Ltd..
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 3.0.3</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+      |
+      <a href="../_sources/manual/overview.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

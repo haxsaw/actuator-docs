@@ -1,0 +1,158 @@
+************************
+Infra Model Basics
+************************
+
+Although the namespace model is the one that is central in an
+Actuator model set, it actually helps to start with the infra model as building an infra model first can yield
+immediate benefits. The infra model describes all the dynamically
+provisionable and static infra resources for a system and describes how they relate to each
+other. The model can define groups of resources and resources that can
+be repeated an arbitrary number of times, allowing them to be nested in
+very complex configurations.
+
+=======================
+A Basic AWS Infra Model
+=======================
+
+The following shows the basic pieces needed to create a single-server infra model on EC2 using a virtual private
+cloud on AWS. We're going to start by ignoring providing a way to access the instance just to make the base code
+simpler:
+
+.. code:: python
+
+    from actuator import ctxt
+    from actuator.infra import InfraModel
+    from actuator.provisioners.aws.resources import *
+
+    class MyInfraModel(InfraModel):
+        # this first bit defines the networking resources we need to
+        # get to the internet. first, make the virtual private cloud
+        vpc = VPC("base-vpc",
+                  "192.168.1.0/24")
+        # subnet to attach to the VPC
+        sn = Subnet("base subnet",
+                    "192.168.1.0/24",
+                    ctxt.model.vpc)
+        # create an internet gateway to the outside world
+        igw = InternetGateway("base gw",
+                              ctxt.model.vpc)
+        # the routing table for VPC and subnet
+        rt = RouteTable("base rt",
+                        ctxt.model.vpc,
+                        ctxt.model.sn)
+        # a route to apply to the routing table that allows all traffic out
+        r = Route("base route",
+                  ctxt.model.rt,
+                  dest_cidr_block="0.0.0.0/0",
+                  gateway=ctxt.model.igw)
+
+        # the following gets us our specific server, network interface, and
+        # gives the interface a floating public IP we can reach
+        ni = NetworkInterface("server-ni",
+                              ctxt.model.sn,
+                              description="something pithy")
+        server = AWSInstance("server",
+                             "ami-09393cef16d65b519",
+                             instance_type='t3.nano',
+                             key_pair=ctxt.model.kp,
+                             network_interfaces=[ctxt.model.ni])
+        server_fip = PublicIP("server_fip",
+                              domain="vpc",
+                              network_interface=ctxt.model.ni)
+
+Like with many clouds, there's a lot of IaaS boilerplate that needs to be added to a model to be able to reach a
+server from the public internet. Actuator provides tools to hide these details if you wish, and those are covered
+in the Infra Models section under More Advanced Uses. But for now, we'll consider the details.
+
+The basic networking setup involves the creation of VPC, Subnet, InternetGateway, RouteTable, and Route resources
+in the model. The order of creation of these resources isn't important, as Actuator will sort out what depends on
+what. The important aspect
+to notice is that in creating some of the resources, there are arguments that start with `ctxt.`. These are `context
+expressions,` and are used to express the relationships between resources in a number of different circumstances,
+in this case in an unfinished model. This is an important enough topic to warrant a short digression on context
+expressions in some detail.
+
+Context Expressions Primer
+==========================
+
+In Actuator, an expression that begins `ctxt.` signals the start of a `context expression`. Context expressions are
+very powerful tools for creating linkages between components in a loosely-coupled way. They essentially describe a
+navigation path though a set of objects such as resources, tasks, or roles, and when actually evaluated they have
+some knowledge of the location or `context` in which they are evaluated.
+
+Every time a component in any model is processed by Actuator (be it a resource or some other
+component), a processing context is created. The *context* wraps up:
+
+-  the instance of the model the component is part of,
+-  the component itself,
+-  the name of the component,
+-  the other models that this model is related to,
+-  and other advanced information.
+
+The context expression is bound to this context when a component is processed, and it provides as way to access other
+parts of a model or a related model in a decoupled way.
+
+For example, in the above infra model, the creation of the Subnet resource involves naming the VPC that the
+subnet should be attached to, which is indicated with the context expression `ctxt.model.vpc`. When the Subnet
+resource is processed by Actuator during orchestration, the context is set up as follows:
+
+- `ctxt.model` is the instance of MyInfraModel being processed
+- `ctxt.comp` is the Subnet resource (component) itself
+- `ctxt.name` is the name of the Subnet resource, in this case "base subnet"
+- `ctxt.nexus` is the gateway to the other models in the model group (namespace, config, etc)
+
+
+
+.. code:: python
+
+    from actuator import ctxt
+    from actuator.infra import InfraModel
+    from actuator.provisioners.aws.resources import *
+
+    class MyInfraModel(InfraModel):
+        # make the virtual private cloud
+        vpc = VPC("base-vpc",
+                  "192.168.1.0/24")
+        base_sg = SecurityGroup("base-sg",
+                                "a common sg to build on",
+                                ctxt.model.vpc)
+        ping_rule = SecurityGroupRule("test rule",
+                                      ctxt.model.base_sg,
+                                      "ingress",
+                                      "0.0.0.0/0",
+                                      -1,
+                                      -1,
+                                      "icmp")
+        ssh_rule = SecurityGroupRule("sshrule",
+                                     ctxt.model.base_sg,
+                                     "ingress",
+                                     "0.0.0.0/0",
+                                     22, 22,
+                                     "tcp")
+        sn = Subnet("base subnet",
+                    "192.168.1.0/24",
+                    ctxt.model.vpc)
+        igw = InternetGateway("base gw",
+                              ctxt.model.vpc)
+        rt = RouteTable("base rt",
+                        ctxt.model.vpc,
+                        ctxt.model.sn)
+        r = Route("base route",
+                  ctxt.model.rt,
+                  dest_cidr_block="0.0.0.0/0",
+                  gateway=ctxt.model.igw)
+
+        # the above was largely boilerplate for networking; the following gets us our specific
+        # server and gives it a floating public IP where we can reach it
+        ni = NetworkInterface("server-ni",
+                              ctxt.model.sn,
+                              description="something pithy",
+                              sec_groups=[ctxt.model.base_sg])
+        server = AWSInstance("server",
+                             "ami-09393cef16d65b519",
+                             instance_type='t3.nano',
+                             key_pair=ctxt.model.kp,
+                             network_interfaces=[ctxt.model.ni])
+        server_fip = PublicIP("server_fip",
+                              domain="vpc",
+                              network_interface=ctxt.model.ni)

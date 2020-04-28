@@ -1,0 +1,256 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>Infra Model Basics &#8212; Actuator Doc  documentation</title>
+    <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <script id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+    <script src="../_static/jquery.js"></script>
+    <script src="../_static/underscore.js"></script>
+    <script src="../_static/doctools.js"></script>
+    <script src="../_static/language_data.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="prev" title="Orchestration Basics" href="orch-basic.html" />
+   
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <div class="section" id="infra-model-basics">
+<h1>Infra Model Basics<a class="headerlink" href="#infra-model-basics" title="Permalink to this headline">¶</a></h1>
+<p>Although the namespace model is the one that is central in an
+Actuator model set, it actually helps to start with the infra model as building an infra model first can yield
+immediate benefits. The infra model describes all the dynamically
+provisionable and static infra resources for a system and describes how they relate to each
+other. The model can define groups of resources and resources that can
+be repeated an arbitrary number of times, allowing them to be nested in
+very complex configurations.</p>
+<div class="section" id="a-basic-aws-infra-model">
+<h2>A Basic AWS Infra Model<a class="headerlink" href="#a-basic-aws-infra-model" title="Permalink to this headline">¶</a></h2>
+<p>The following shows the basic pieces needed to create a single-server infra model on EC2 using a virtual private
+cloud on AWS. We’re going to start by ignoring providing a way to access the instance just to make the base code
+simpler:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">actuator</span> <span class="kn">import</span> <span class="n">ctxt</span>
+<span class="kn">from</span> <span class="nn">actuator.infra</span> <span class="kn">import</span> <span class="n">InfraModel</span>
+<span class="kn">from</span> <span class="nn">actuator.provisioners.aws.resources</span> <span class="kn">import</span> <span class="o">*</span>
+
+<span class="k">class</span> <span class="nc">MyInfraModel</span><span class="p">(</span><span class="n">InfraModel</span><span class="p">):</span>
+    <span class="c1"># this first bit defines the networking resources we need to</span>
+    <span class="c1"># get to the internet. first, make the virtual private cloud</span>
+    <span class="n">vpc</span> <span class="o">=</span> <span class="n">VPC</span><span class="p">(</span><span class="s2">&quot;base-vpc&quot;</span><span class="p">,</span>
+              <span class="s2">&quot;192.168.1.0/24&quot;</span><span class="p">)</span>
+    <span class="c1"># subnet to attach to the VPC</span>
+    <span class="n">sn</span> <span class="o">=</span> <span class="n">Subnet</span><span class="p">(</span><span class="s2">&quot;base subnet&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;192.168.1.0/24&quot;</span><span class="p">,</span>
+                <span class="n">ctxt</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">vpc</span><span class="p">)</span>
+    <span class="c1"># create an internet gateway to the outside world</span>
+    <span class="n">igw</span> <span class="o">=</span> <span class="n">InternetGateway</span><span class="p">(</span><span class="s2">&quot;base gw&quot;</span><span class="p">,</span>
+                          <span class="n">ctxt</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">vpc</span><span class="p">)</span>
+    <span class="c1"># the routing table for VPC and subnet</span>
+    <span class="n">rt</span> <span class="o">=</span> <span class="n">RouteTable</span><span class="p">(</span><span class="s2">&quot;base rt&quot;</span><span class="p">,</span>
+                    <span class="n">ctxt</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">vpc</span><span class="p">,</span>
+                    <span class="n">ctxt</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">sn</span><span class="p">)</span>
+    <span class="c1"># a route to apply to the routing table that allows all traffic out</span>
+    <span class="n">r</span> <span class="o">=</span> <span class="n">Route</span><span class="p">(</span><span class="s2">&quot;base route&quot;</span><span class="p">,</span>
+              <span class="n">ctxt</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">rt</span><span class="p">,</span>
+              <span class="n">dest_cidr_block</span><span class="o">=</span><span class="s2">&quot;0.0.0.0/0&quot;</span><span class="p">,</span>
+              <span class="n">gateway</span><span class="o">=</span><span class="n">ctxt</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">igw</span><span class="p">)</span>
+
+    <span class="c1"># the following gets us our specific server, network interface, and</span>
+    <span class="c1"># gives the interface a floating public IP we can reach</span>
+    <span class="n">ni</span> <span class="o">=</span> <span class="n">NetworkInterface</span><span class="p">(</span><span class="s2">&quot;server-ni&quot;</span><span class="p">,</span>
+                          <span class="n">ctxt</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">sn</span><span class="p">,</span>
+                          <span class="n">description</span><span class="o">=</span><span class="s2">&quot;something pithy&quot;</span><span class="p">)</span>
+    <span class="n">server</span> <span class="o">=</span> <span class="n">AWSInstance</span><span class="p">(</span><span class="s2">&quot;server&quot;</span><span class="p">,</span>
+                         <span class="s2">&quot;ami-09393cef16d65b519&quot;</span><span class="p">,</span>
+                         <span class="n">instance_type</span><span class="o">=</span><span class="s1">&#39;t3.nano&#39;</span><span class="p">,</span>
+                         <span class="n">key_pair</span><span class="o">=</span><span class="n">ctxt</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">kp</span><span class="p">,</span>
+                         <span class="n">network_interfaces</span><span class="o">=</span><span class="p">[</span><span class="n">ctxt</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">ni</span><span class="p">])</span>
+    <span class="n">server_fip</span> <span class="o">=</span> <span class="n">PublicIP</span><span class="p">(</span><span class="s2">&quot;server_fip&quot;</span><span class="p">,</span>
+                          <span class="n">domain</span><span class="o">=</span><span class="s2">&quot;vpc&quot;</span><span class="p">,</span>
+                          <span class="n">network_interface</span><span class="o">=</span><span class="n">ctxt</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">ni</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Like with many clouds, there’s a lot of IaaS boilerplate that needs to be added to a model to be able to reach a
+server from the public internet. Actuator provides tools to hide these details if you wish, and those are covered
+in the Infra Models section under More Advanced Uses. But for now, we’ll consider the details.</p>
+<p>The basic networking setup involves the creation of VPC, Subnet, InternetGateway, RouteTable, and Route resources
+in the model. The order of creation of these resources isn’t important, as Actuator will sort out what depends on
+what. The important aspect
+to notice is that in creating some of the resources, there are arguments that start with <cite>ctxt.</cite>. These are <cite>context
+expressions,</cite> and are used to express the relationships between resources in a number of different circumstances,
+in this case in an unfinished model. This is an important enough topic to warrant a short digression on context
+expressions in some detail.</p>
+<div class="section" id="context-expressions-primer">
+<h3>Context Expressions Primer<a class="headerlink" href="#context-expressions-primer" title="Permalink to this headline">¶</a></h3>
+<p>In Actuator, an expression that begins <cite>ctxt.</cite> signals the start of a <cite>context expression</cite>. Context expressions are
+very powerful tools for creating linkages between components in a loosely-coupled way. They essentially describe a
+navigation path though a set of objects such as resources, tasks, or roles, and when actually evaluated they have
+some knowledge of the location or <cite>context</cite> in which they are evaluated.</p>
+<p>Every time a component in any model is processed by Actuator (be it a resource or some other
+component), a processing context is created. The <em>context</em> wraps up:</p>
+<ul class="simple">
+<li><p>the instance of the model the component is part of,</p></li>
+<li><p>the component itself,</p></li>
+<li><p>the name of the component,</p></li>
+<li><p>the other models that this model is related to,</p></li>
+<li><p>and other advanced information.</p></li>
+</ul>
+<p>The context expression is bound to this context when a component is processed, and it provides as way to access other
+parts of a model or a related model in a decoupled way.</p>
+<p>For example, in the above infra model, the creation of the Subnet resource involves naming the VPC that the
+subnet should be attached to, which is indicated with the context expression <cite>ctxt.model.vpc</cite>. When the Subnet
+resource is processed by Actuator during orchestration, the context is set up as follows:</p>
+<ul class="simple">
+<li><p><cite>ctxt.model</cite> is the instance of MyInfraModel being processed</p></li>
+<li><p><cite>ctxt.comp</cite> is the Subnet resource (component) itself</p></li>
+<li><p><cite>ctxt.name</cite> is the name of the Subnet resource, in this case “base subnet”</p></li>
+<li><p><cite>ctxt.nexus</cite> is the gateway to the other models in the model group (namespace, config, etc)</p></li>
+</ul>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">actuator</span> <span class="kn">import</span> <span class="n">ctxt</span>
+<span class="kn">from</span> <span class="nn">actuator.infra</span> <span class="kn">import</span> <span class="n">InfraModel</span>
+<span class="kn">from</span> <span class="nn">actuator.provisioners.aws.resources</span> <span class="kn">import</span> <span class="o">*</span>
+
+<span class="k">class</span> <span class="nc">MyInfraModel</span><span class="p">(</span><span class="n">InfraModel</span><span class="p">):</span>
+    <span class="c1"># make the virtual private cloud</span>
+    <span class="n">vpc</span> <span class="o">=</span> <span class="n">VPC</span><span class="p">(</span><span class="s2">&quot;base-vpc&quot;</span><span class="p">,</span>
+              <span class="s2">&quot;192.168.1.0/24&quot;</span><span class="p">)</span>
+    <span class="n">base_sg</span> <span class="o">=</span> <span class="n">SecurityGroup</span><span class="p">(</span><span class="s2">&quot;base-sg&quot;</span><span class="p">,</span>
+                            <span class="s2">&quot;a common sg to build on&quot;</span><span class="p">,</span>
+                            <span class="n">ctxt</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">vpc</span><span class="p">)</span>
+    <span class="n">ping_rule</span> <span class="o">=</span> <span class="n">SecurityGroupRule</span><span class="p">(</span><span class="s2">&quot;test rule&quot;</span><span class="p">,</span>
+                                  <span class="n">ctxt</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">base_sg</span><span class="p">,</span>
+                                  <span class="s2">&quot;ingress&quot;</span><span class="p">,</span>
+                                  <span class="s2">&quot;0.0.0.0/0&quot;</span><span class="p">,</span>
+                                  <span class="o">-</span><span class="mi">1</span><span class="p">,</span>
+                                  <span class="o">-</span><span class="mi">1</span><span class="p">,</span>
+                                  <span class="s2">&quot;icmp&quot;</span><span class="p">)</span>
+    <span class="n">ssh_rule</span> <span class="o">=</span> <span class="n">SecurityGroupRule</span><span class="p">(</span><span class="s2">&quot;sshrule&quot;</span><span class="p">,</span>
+                                 <span class="n">ctxt</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">base_sg</span><span class="p">,</span>
+                                 <span class="s2">&quot;ingress&quot;</span><span class="p">,</span>
+                                 <span class="s2">&quot;0.0.0.0/0&quot;</span><span class="p">,</span>
+                                 <span class="mi">22</span><span class="p">,</span> <span class="mi">22</span><span class="p">,</span>
+                                 <span class="s2">&quot;tcp&quot;</span><span class="p">)</span>
+    <span class="n">sn</span> <span class="o">=</span> <span class="n">Subnet</span><span class="p">(</span><span class="s2">&quot;base subnet&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;192.168.1.0/24&quot;</span><span class="p">,</span>
+                <span class="n">ctxt</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">vpc</span><span class="p">)</span>
+    <span class="n">igw</span> <span class="o">=</span> <span class="n">InternetGateway</span><span class="p">(</span><span class="s2">&quot;base gw&quot;</span><span class="p">,</span>
+                          <span class="n">ctxt</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">vpc</span><span class="p">)</span>
+    <span class="n">rt</span> <span class="o">=</span> <span class="n">RouteTable</span><span class="p">(</span><span class="s2">&quot;base rt&quot;</span><span class="p">,</span>
+                    <span class="n">ctxt</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">vpc</span><span class="p">,</span>
+                    <span class="n">ctxt</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">sn</span><span class="p">)</span>
+    <span class="n">r</span> <span class="o">=</span> <span class="n">Route</span><span class="p">(</span><span class="s2">&quot;base route&quot;</span><span class="p">,</span>
+              <span class="n">ctxt</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">rt</span><span class="p">,</span>
+              <span class="n">dest_cidr_block</span><span class="o">=</span><span class="s2">&quot;0.0.0.0/0&quot;</span><span class="p">,</span>
+              <span class="n">gateway</span><span class="o">=</span><span class="n">ctxt</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">igw</span><span class="p">)</span>
+
+    <span class="c1"># the above was largely boilerplate for networking; the following gets us our specific</span>
+    <span class="c1"># server and gives it a floating public IP where we can reach it</span>
+    <span class="n">ni</span> <span class="o">=</span> <span class="n">NetworkInterface</span><span class="p">(</span><span class="s2">&quot;server-ni&quot;</span><span class="p">,</span>
+                          <span class="n">ctxt</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">sn</span><span class="p">,</span>
+                          <span class="n">description</span><span class="o">=</span><span class="s2">&quot;something pithy&quot;</span><span class="p">,</span>
+                          <span class="n">sec_groups</span><span class="o">=</span><span class="p">[</span><span class="n">ctxt</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">base_sg</span><span class="p">])</span>
+    <span class="n">server</span> <span class="o">=</span> <span class="n">AWSInstance</span><span class="p">(</span><span class="s2">&quot;server&quot;</span><span class="p">,</span>
+                         <span class="s2">&quot;ami-09393cef16d65b519&quot;</span><span class="p">,</span>
+                         <span class="n">instance_type</span><span class="o">=</span><span class="s1">&#39;t3.nano&#39;</span><span class="p">,</span>
+                         <span class="n">key_pair</span><span class="o">=</span><span class="n">ctxt</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">kp</span><span class="p">,</span>
+                         <span class="n">network_interfaces</span><span class="o">=</span><span class="p">[</span><span class="n">ctxt</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">ni</span><span class="p">])</span>
+    <span class="n">server_fip</span> <span class="o">=</span> <span class="n">PublicIP</span><span class="p">(</span><span class="s2">&quot;server_fip&quot;</span><span class="p">,</span>
+                          <span class="n">domain</span><span class="o">=</span><span class="s2">&quot;vpc&quot;</span><span class="p">,</span>
+                          <span class="n">network_interface</span><span class="o">=</span><span class="n">ctxt</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">ni</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+</div>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../index.html">Actuator Doc</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="overview.html">Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="key-concepts.html">Key Concepts</a></li>
+<li class="toctree-l1"><a class="reference internal" href="orch-basic.html">Orchestration Basics</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Infra Model Basics</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#a-basic-aws-infra-model">A Basic AWS Infra Model</a></li>
+</ul>
+</li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../index.html">Documentation overview</a><ul>
+      <li>Previous: <a href="orch-basic.html" title="previous chapter">Orchestration Basics</a></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2020, Incisive Technology Ltd..
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 3.0.3</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+      |
+      <a href="../_sources/manual/infra-basic.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

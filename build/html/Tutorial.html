@@ -1,0 +1,1706 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>Actuator Tutorial &#8212; Actuator Doc  documentation</title>
+    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+    <script src="_static/jquery.js"></script>
+    <script src="_static/underscore.js"></script>
+    <script src="_static/doctools.js"></script>
+    <script src="_static/language_data.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <div class="section" id="actuator-tutorial">
+<h1>Actuator Tutorial<a class="headerlink" href="#actuator-tutorial" title="Permalink to this headline">¶</a></h1>
+<p>Actuator allows you to use Python to declaratively describe system
+infra, configuration, and execution requirements, and then provision
+them in the cloud.</p>
+<ol class="arabic simple">
+<li><p><a class="reference external" href="#intro">Intro</a></p></li>
+<li><p><a class="reference external" href="#overview">Overview</a> (as close to a tl;dr that’s still
+meaningful)</p></li>
+</ol>
+<blockquote>
+<div><ol class="arabic simple">
+<li><p><a class="reference external" href="#ov_inframodel">Infra Model</a></p></li>
+<li><p><a class="reference external" href="#ov_namespacemodel">Namespace Model</a></p></li>
+<li><p><a class="reference external" href="#ov_configmodel">Configuration Model</a></p></li>
+<li><p><a class="reference external" href="#ov_execmodel">Execution Model</a></p></li>
+</ol>
+</div></blockquote>
+<ol class="arabic simple" start="3">
+<li><p><a class="reference external" href="#os_config">Configuring for OpenStack</a></p></li>
+<li><p><a class="reference external" href="#inframodels">Infra models</a></p></li>
+</ol>
+<blockquote>
+<div><ol class="arabic simple">
+<li><p><a class="reference external" href="#simple_openstack_example">A simple Openstack example</a></p></li>
+<li><p><a class="reference external" href="#multi_resources">Multiple Resources</a></p></li>
+<li><p><a class="reference external" href="#resource_groups">Resource Groups</a></p></li>
+<li><p><a class="reference external" href="#modrefs_ctxtexprs">Model References, Context Expressions, and the Nexus</a></p></li>
+</ol>
+</div></blockquote>
+<ol class="arabic simple" start="5">
+<li><p><a class="reference external" href="#nsmodels">Namespace models</a></p></li>
+</ol>
+<blockquote>
+<div><ol class="arabic simple">
+<li><p><a class="reference external" href="#simplensexample">An example</a></p></li>
+<li><p><a class="reference external" href="#dynamicns">Dynamic Namespaces</a></p></li>
+<li><p><a class="reference external" href="#varobjs">Var objects</a></p></li>
+<li><p><a class="reference external" href="#overrides">Variable setting and overrides</a></p></li>
+<li><p><a class="reference external" href="#varrefs">Variable references</a></p></li>
+</ol>
+</div></blockquote>
+<ol class="arabic simple" start="6">
+<li><p><a class="reference external" href="#configmodels">Configuration models</a></p></li>
+</ol>
+<blockquote>
+<div><ol class="arabic simple">
+<li><p><a class="reference external" href="#taskdec">Declaring tasks</a></p></li>
+<li><p><a class="reference external" href="#taskdeps">Declaring dependencies</a></p></li>
+<li><p><a class="reference external" href="#depexp">Dependency expressions</a></p></li>
+<li><p><a class="reference external" href="#taskscaling">Auto-scaling tasks</a></p></li>
+<li><p><a class="reference external" href="#classtasks">Config classes as tasks</a></p></li>
+<li><p><a class="reference external" href="#refselect">Reference selection expressions</a></p></li>
+</ol>
+</div></blockquote>
+<ol class="arabic simple" start="7">
+<li><p>Execution Models (yet to come)</p></li>
+<li><p><a class="reference external" href="#orchestration">Orchestration</a>– putting it all together</p></li>
+</ol>
+<blockquote>
+<div><ol class="arabic simple">
+<li><p>Initiating a system</p></li>
+<li><p>Tearing a system down</p></li>
+<li><p>Inspecting errors</p></li>
+<li><p>Persisting models of initiated systems</p></li>
+</ol>
+</div></blockquote>
+<div class="section" id="intro">
+<h2>Intro<a class="headerlink" href="#intro" title="Permalink to this headline">¶</a></h2>
+<p>Actuator seeks to provide an end-to-end set of tools for spinning up
+systems in the cloud, from provisioning the infra, defining the roles
+that define the system and the names that govern their operation,
+configuring the infra for the software that is to be run, and then
+executing that system’s code on the configured infra.</p>
+<p>It does this by providing facilities that allow a system to be described
+as a collection of <em>models</em> in a declarative fashion directly in Python
+code, in a manner similar to various declarative systems for ORMs
+(Elixir being a prime example). Being in Python, these models:</p>
+<ul class="simple">
+<li><p>can be very flexible and dynamic in their composition</p></li>
+<li><p>can be integrated with other Python packages</p></li>
+<li><p>can be authored and browsed in existing IDEs</p></li>
+<li><p>can be debugged with standard tools</p></li>
+<li><p>can be inspected for auditing and other purposes</p></li>
+<li><p>and can be factored into multiple modules of reusable sets of
+declarative components</p></li>
+</ul>
+<p>And while each model provides capabilties on their own, they can be
+inter-related to not only exchange information, but to allow instances
+of a model to tailor the content of other models.</p>
+<p>Actuator uses a Python <em>class</em> as the basis for defining a model, and
+the class serves as a logical description of the item being modeled; for
+instance a collection of infrastructure resources for a system. These
+model classes can have both static and dynamic aspects, and can
+themselves be easily created within a factory function to make the
+classes’ content highly variable.</p>
+<p>Actuator models can be related to each other so that their structure and
+data can inform and sometimes drive the content of other models.</p>
+</div>
+<div class="section" id="overview">
+<h2>Overview<a class="headerlink" href="#overview" title="Permalink to this headline">¶</a></h2>
+<p>Actuator splits the modeling space into four parts:</p>
+<div class="section" id="infra-model">
+<h3>Infra Model<a class="headerlink" href="#infra-model" title="Permalink to this headline">¶</a></h3>
+<p>The <em>infra model</em>, established with a subclass of <strong>InfraModel</strong>,
+defines all the infrastructure resources of a system and their
+inter-relationships. Infra models can have fixed resources that are
+always provisioned with each instance of the model class, as well as
+variable-sized resource containers that allow multiple copies of
+resources to be easily created on an instance-by-instance basis. The
+infra model also has facilities to define groups of resources that can
+be created as a whole, and an arbitrary number of copies of these groups
+can be created for each instance. References into the infra model can be
+held by other models, and these references can be subsequently evaluated
+against an instance of the infra model to extract data from that
+particular instance. For example, a namespace model may need the IP
+address from a particular server in an infra model, and so the namespace
+model may hold a reference into the infra model for the IP address
+attribute that yields the actual IP address of a provisioned server when
+an instance of that infra model is provisioned.</p>
+</div>
+<div class="section" id="namespace-model">
+<h3>Namespace Model<a class="headerlink" href="#namespace-model" title="Permalink to this headline">¶</a></h3>
+<p>The <em>namespace model</em>, established with a subclass of
+<strong>NamespaceModel</strong>, defines a hierarchical namespace based around system
+“roles” which defines all the names that are important to the
+configuration and run-time operation of a system. A “role” can be
+thought of as a software component of a system; for instance, a system
+might have a database role, an app server role, or a grid node role.
+Names in the namespace can be used for a variety of purposes, such as
+setting up environment variables, or establishing name-value pairs for
+processing template files such as scripts or properties files. The names
+in the namespace are associated with the namespace’s roles, and each
+system role’s view of the namespace is composed of any names specific to
+that role, plus the names that are defined higher up in the namespace
+hierarchy. Values for the names can be baked into the model, supplied at
+model class instantiation, by setting values on the model class
+instance, or can be acquired by resolving references to other models
+such as the infra model.</p>
+</div>
+<div class="section" id="configuration-model">
+<h3>Configuration Model<a class="headerlink" href="#configuration-model" title="Permalink to this headline">¶</a></h3>
+<p>The <em>configuration model</em>, established with a subclass of
+<strong>ConfigModel</strong>, defines all the tasks to perform on the system roles’
+infrastructure that make them ready to run the system’s executables. The
+configuration model defines tasks to be performed on the logical system
+roles of the namespace model, which in turn inidicates what
+infrastructure is involved in the configuration tasks. The configuration
+model also captures task dependencies so that the configuration tasks
+are all performed in the proper order. Configuration models can also be
+treated as tasks and used within other configuration models.</p>
+</div>
+<div class="section" id="execution-model">
+<h3>Execution Model<a class="headerlink" href="#execution-model" title="Permalink to this headline">¶</a></h3>
+<p>The <em>execution model</em>, established with a subclass of
+<strong>ExecutionModel</strong>, defines the actual processes to run for each system
+role named in the namespace model. Like with the configuration model,
+dependencies between the executables can be expressed so that a
+particular startup order can be enforced.</p>
+<p>Each model can be built and used independently, but it is the
+inter-relationships between the models that give Actuator its
+representational power.</p>
+<p>Actuator then provides a number of support tools that can take instances
+of these models and processes their informantion, turning it into
+actions in the cloud. So for instance, a provisioner can take an infra
+model instance and manage the process of provisioning the infra it
+describes, and another can marry that instance with a namespace to fully
+populate a namespace model instance so that the configurator can carry
+out configuration tasks, and so on.</p>
+<p>As may have been guessed, the key model in Actuator is the namespace
+model, as it serves as the focal point to tie all the other models
+together.</p>
+</div>
+</div>
+<div class="section" id="configuring-for-openstack">
+<h2>Configuring for OpenStack<a class="headerlink" href="#configuring-for-openstack" title="Permalink to this headline">¶</a></h2>
+<p>Actuator uses the <a class="reference external" href="https://pypi.python.org/pypi/shade">shade</a> package
+for accessing OpenStack clouds, which in turn uses
+<a class="reference external" href="https://pypi.python.org/pypi/os-client-config">os-client-config</a> for
+acquiring information on how to connect to a cloud in order to make
+requests. The full documentation for os-client-config can be found
+<a class="reference external" href="http://docs.openstack.org/developer/os-client-config/">here</a>. In
+this following section, a short example will be provide to get you
+going. How this interacts with provisioning will be covered in later
+sections.</p>
+<p>The os-client-config package uses a YAML file, conventionally named
+<strong>clouds.yml</strong>, to store information as to the details of connecting to
+various clouds. You can fully specify your own cloud’s details, or else
+use one of a number of pre-built specifications, providing only the
+additional information required.</p>
+<p>Here’s an example of a clouds.yml file for connecting to
+<a class="reference external" href="https://www.citycloud.com/">CityCloud</a>:</p>
+<div class="highlight-yml notranslate"><div class="highlight"><pre><span></span>clouds:
+    citycloud:
+        profile: citycloud
+        auth:
+            username: &lt; your user name &gt;
+            password: &lt; your password &gt;
+            project_name: &lt; your project name &gt;
+            domain_id: &lt; your domain id for OpenStack &gt;
+        region_name: Lon1  # or Sto2, Kna1, etc
+</pre></div>
+</div>
+<p>How this gets filled out will differ from cloud to cloud; on CityCloud’s
+control panel:</p>
+<ul class="simple">
+<li><p>Users are created by clicking on the Account button in the upper
+right, and then on the “Add user” button on the Users tab</p></li>
+<li><p>Projects are created by choosing Settings on the left-hand menu, and
+then “Manage projects” under Settings. From there you can click on
+“Create project”</p></li>
+<li><p>On CityCloud, the domain_id seems to be associated with your
+account. One the left-hand menu, expand the API section, and then
+click on “Native Openstack API”.</p></li>
+</ul>
+<p>You need to refer to the doc for your particular OpenStack
+implementation as well as the doc for os-client-config. To help you get
+the config right, Actuator includes a small test program in the
+src/examples directory, list_flavors.py. When run in the same directory
+as your cloud.yml file, it will attempt to connect to the cloud named as
+an argument to the program and list all the flavors offered by that
+cloud. Tinker with your clouds.yml file until you can successfully list
+flavors in your cloud.</p>
+<p>Os-client-config provides a list of pre-defined cloud profiles
+<a class="reference external" href="http://docs.openstack.org/developer/os-client-config/vendor-support.html">here</a>.</p>
+</div>
+<div class="section" id="infra-models">
+<h2>Infra models<a class="headerlink" href="#infra-models" title="Permalink to this headline">¶</a></h2>
+<p>Although the namespace model is the one that is most central in
+Actuator, it actually helps to start with the infra model as it not only
+is a little more accessible, but building an infra model first can yield
+immediate benefits. The infra model describes all the dynamically
+provisionable infra resources and describes how they relate to each
+other. The model can define groups of resources and resources that can
+be repeated an arbitrary number of times, allowing them to be nested in
+very complex configurations.</p>
+<div class="section" id="a-simple-openstack-example">
+<h3>A simple Openstack example<a class="headerlink" href="#a-simple-openstack-example" title="Permalink to this headline">¶</a></h3>
+<p>The best place to start is to develop a model that can be used to
+provision the infrastructure for a system. An infrastructure model is
+defined by creating a class that describes the infra’s resources in a
+declarative fashion. This example will use resources built using the
+<a class="reference external" href="http://www.openstack.org/">Openstack</a> binding to Actuator.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">actuator</span> <span class="kn">import</span> <span class="n">InfraModel</span><span class="p">,</span> <span class="n">ctxt</span>
+<span class="kn">from</span> <span class="nn">actuator.provisioners.openstack.resources</span> <span class="kn">import</span> <span class="p">(</span><span class="n">Server</span><span class="p">,</span>
+                                                       <span class="n">Network</span><span class="p">,</span>
+                                                       <span class="n">Subnet</span><span class="p">,</span>
+                                                       <span class="n">FloatingIP</span><span class="p">,</span>
+                                                       <span class="n">Router</span><span class="p">,</span>
+                                                       <span class="n">RouterGateway</span><span class="p">,</span>
+                                                       <span class="n">RouterInterface</span><span class="p">)</span>
+
+<span class="k">class</span> <span class="nc">SingleOpenstackServer</span><span class="p">(</span><span class="n">InfraModel</span><span class="p">):</span>
+  <span class="n">server</span> <span class="o">=</span> <span class="n">Server</span><span class="p">(</span><span class="s2">&quot;actuator1&quot;</span><span class="p">,</span> <span class="s2">&quot;Ubuntu 13.10&quot;</span><span class="p">,</span> <span class="s2">&quot;m1.small&quot;</span><span class="p">,</span>
+                  <span class="n">nics</span><span class="o">=</span><span class="p">[</span><span class="n">ctxt</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">net</span><span class="p">])</span>
+  <span class="n">net</span> <span class="o">=</span> <span class="n">Network</span><span class="p">(</span><span class="s2">&quot;actuator_ex1_net&quot;</span><span class="p">)</span>
+  <span class="n">fip</span> <span class="o">=</span> <span class="n">FloatingIP</span><span class="p">(</span><span class="s2">&quot;actuator_ex1_float&quot;</span><span class="p">,</span> <span class="n">ctxt</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">server</span><span class="p">,</span>
+                   <span class="n">ctxt</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">server</span><span class="o">.</span><span class="n">iface0</span><span class="o">.</span><span class="n">addr0</span><span class="p">,</span> <span class="n">pool</span><span class="o">=</span><span class="s2">&quot;external&quot;</span><span class="p">)</span>
+  <span class="n">subnet</span> <span class="o">=</span> <span class="n">Subnet</span><span class="p">(</span><span class="s2">&quot;actuator_ex1_subnet&quot;</span><span class="p">,</span> <span class="n">ctxt</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">net</span><span class="p">,</span>
+                  <span class="s2">&quot;192.168.23.0/24&quot;</span><span class="p">,</span>
+                  <span class="n">dns_nameservers</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;8.8.8.8&#39;</span><span class="p">])</span>
+  <span class="n">router</span> <span class="o">=</span> <span class="n">Router</span><span class="p">(</span><span class="s2">&quot;actuator_ex1_router&quot;</span><span class="p">)</span>
+  <span class="n">gateway</span> <span class="o">=</span> <span class="n">RouterGateway</span><span class="p">(</span><span class="s2">&quot;actuator_ex1_gateway&quot;</span><span class="p">,</span> <span class="n">ctxt</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">router</span><span class="p">,</span>
+                          <span class="s2">&quot;external&quot;</span><span class="p">)</span>
+  <span class="n">rinter</span> <span class="o">=</span> <span class="n">RouterInterface</span><span class="p">(</span><span class="s2">&quot;actuator_ex1_rinter&quot;</span><span class="p">,</span> <span class="n">ctxt</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">router</span><span class="p">,</span>
+                           <span class="n">ctxt</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">subnet</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>The order of the resources in the class isn’t particularly important;
+the provisioner will take care of sorting out what needs to be done
+before what. Also note the use of ‘ctxt.model.*’ for some of the
+arguments; these constructions are called <em>context expressions</em> as they
+result in instances of the ContextExpr class, which are used to defer
+the evaluation of a model reference until an instance of the model (the
+“context”) is available to evaluate the expression against.</p>
+<p>Instances of the class (and hence the model) are then created, and the
+instance is given to a provisioner which inspects the model instance and
+performs the necessary provisioning actions in the proper order.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">actuator.provisioners.openstack.openstack</span> <span class="kn">import</span> <span class="n">OpenstackProvisioner</span>
+<span class="n">inst</span> <span class="o">=</span> <span class="n">SingleOpenstackServer</span><span class="p">(</span><span class="s2">&quot;actuator_ex1&quot;</span><span class="p">)</span>
+<span class="n">provisioner</span> <span class="o">=</span> <span class="n">OpenstackProvisioner</span><span class="p">(</span><span class="n">cloud_name</span><span class="o">=</span><span class="s2">&quot;citycloud&quot;</span><span class="p">)</span>
+<span class="n">provisioner</span><span class="o">.</span><span class="n">provision_infra_model</span><span class="p">(</span><span class="n">inst</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Often, there’s a lot of repeated boilerplate in an infra spec; in the
+above example the network, subnet, router, gateway, and router interface
+are all common resources that need to be provisioned to get access to
+the infra from outside the cloud. Actuator provides two ways to factor
+out common groups of resources: providing a dictionary of resources to
+the with_resources function, and using the
+<a class="reference external" href="#resource_groups">ResourceGroup</a> wrapper class to define a group of
+standard resources. We’ll first recast the above example using
+with_resources():</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">gateway_components</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;net&quot;</span><span class="p">:</span><span class="n">Network</span><span class="p">(</span><span class="s2">&quot;actuator_ex1_net&quot;</span><span class="p">),</span>
+                      <span class="s2">&quot;subnet&quot;</span><span class="p">:</span><span class="n">Subnet</span><span class="p">(</span><span class="s2">&quot;actuator_ex1_subnet&quot;</span><span class="p">,</span> <span class="n">ctxt</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">net</span><span class="p">,</span>
+                                      <span class="s2">&quot;192.168.23.0/24&quot;</span><span class="p">,</span> <span class="n">dns_nameservers</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;8.8.8.8&#39;</span><span class="p">]),</span>
+                      <span class="s2">&quot;router&quot;</span><span class="p">:</span><span class="n">Router</span><span class="p">(</span><span class="s2">&quot;actuator_ex1_router&quot;</span><span class="p">),</span>
+                      <span class="s2">&quot;gateway&quot;</span><span class="p">:</span><span class="n">RouterGateway</span><span class="p">(</span><span class="s2">&quot;actuator_ex1_gateway&quot;</span><span class="p">,</span> <span class="n">ctxt</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">router</span><span class="p">,</span>
+                                              <span class="s2">&quot;external&quot;</span><span class="p">),</span>
+                      <span class="s2">&quot;rinter&quot;</span><span class="p">:</span><span class="n">RouterInterface</span><span class="p">(</span><span class="s2">&quot;actuator_ex1_rinter&quot;</span><span class="p">,</span> <span class="n">ctxt</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">router</span><span class="p">,</span>
+                                               <span class="n">ctxt</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">subnet</span><span class="p">)}</span>
+
+
+<span class="k">class</span> <span class="nc">SingleOpenstackServer</span><span class="p">(</span><span class="n">InfraModel</span><span class="p">):</span>
+  <span class="n">with_resources</span><span class="p">(</span><span class="o">**</span><span class="n">gateway_components</span><span class="p">)</span>
+  <span class="n">server</span> <span class="o">=</span> <span class="n">Server</span><span class="p">(</span><span class="s2">&quot;actuator1&quot;</span><span class="p">,</span> <span class="s2">&quot;Ubuntu 13.10&quot;</span><span class="p">,</span> <span class="s2">&quot;m1.small&quot;</span><span class="p">,</span> <span class="n">nics</span><span class="o">=</span><span class="p">[</span><span class="n">ctxt</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">net</span><span class="p">])</span>
+  <span class="n">fip</span> <span class="o">=</span> <span class="n">FloatingIP</span><span class="p">(</span><span class="s2">&quot;actuator_ex1_float&quot;</span><span class="p">,</span> <span class="n">ctxt</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">server</span><span class="p">,</span>
+                   <span class="n">ctxt</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">server</span><span class="o">.</span><span class="n">iface0</span><span class="o">.</span><span class="n">addr0</span><span class="p">,</span> <span class="n">pool</span><span class="o">=</span><span class="s2">&quot;external&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>With with_resources(), all the keys in the dictionary are established
+as attributes on the infra model class, and can be accessed just as if
+they were declared directly in the class. Since this is just standard
+keyword argument notation, you could also use a list of “name=value”
+expressions for the same effect.</p>
+</div>
+<div class="section" id="multiple-resources">
+<h3>Multiple resources<a class="headerlink" href="#multiple-resources" title="Permalink to this headline">¶</a></h3>
+<p>If you require a set of identical resources to be created in a model,
+the MultiResource wrapper provides a way to declare a resource as a
+template and then to get as many copies of that template created as
+required:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">actuator</span> <span class="kn">import</span> <span class="n">InfraModel</span><span class="p">,</span> <span class="n">MultiResource</span><span class="p">,</span> <span class="n">ctxt</span><span class="p">,</span> <span class="n">with_resources</span>
+<span class="kn">from</span> <span class="nn">actuator.provisioners.openstack.resources</span> <span class="kn">import</span> <span class="p">(</span><span class="n">Server</span><span class="p">,</span>
+                                                       <span class="n">Network</span><span class="p">,</span> <span class="n">Subnet</span><span class="p">,</span>
+                                                       <span class="n">FloatingIP</span><span class="p">,</span>
+                                                       <span class="n">RouterGateway</span><span class="p">,</span>
+                                                       <span class="n">RouterInterface</span><span class="p">)</span>
+
+<span class="k">class</span> <span class="nc">MultipleServers</span><span class="p">(</span><span class="n">InfraModel</span><span class="p">):</span>
+  <span class="c1">#</span>
+  <span class="c1"># First, declare the common networking components with with_resources</span>
+  <span class="c1">#</span>
+  <span class="n">with_resources</span><span class="p">(</span><span class="o">**</span><span class="n">gateway_components</span><span class="p">)</span>
+  <span class="c1">#</span>
+  <span class="c1"># now declare the &quot;foreman&quot;; this will be the only server the outside</span>
+  <span class="c1"># world can reach, and it will pass off work requests to the workers.</span>
+  <span class="c1"># It will need a floating IP for the outside world to see it</span>
+  <span class="c1">#</span>
+  <span class="n">foreman</span> <span class="o">=</span> <span class="n">Server</span><span class="p">(</span><span class="s2">&quot;foreman&quot;</span><span class="p">,</span> <span class="s2">&quot;Ubuntu 13.10&quot;</span><span class="p">,</span> <span class="s2">&quot;m1.small&quot;</span><span class="p">,</span>
+                   <span class="n">nics</span><span class="o">=</span><span class="p">[</span><span class="n">ctxt</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">net</span><span class="p">])</span>
+  <span class="n">fip</span> <span class="o">=</span> <span class="n">FloatingIP</span><span class="p">(</span><span class="s2">&quot;actuator_ex2_float&quot;</span><span class="p">,</span> <span class="n">ctxt</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">server</span><span class="p">,</span>
+                   <span class="n">ctxt</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">server</span><span class="o">.</span><span class="n">iface0</span><span class="o">.</span><span class="n">addr0</span><span class="p">,</span> <span class="n">pool</span><span class="o">=</span><span class="s2">&quot;external&quot;</span><span class="p">)</span>
+  <span class="c1">#</span>
+  <span class="c1"># finally, declare the workers MultiResource</span>
+  <span class="c1">#</span>
+  <span class="n">workers</span> <span class="o">=</span> <span class="n">MultiResource</span><span class="p">(</span><span class="n">Server</span><span class="p">(</span><span class="s2">&quot;worker&quot;</span><span class="p">,</span> <span class="s2">&quot;Ubuntu 13.10&quot;</span><span class="p">,</span> <span class="s2">&quot;m1.small&quot;</span><span class="p">,</span>
+                                  <span class="n">nics</span><span class="o">=</span><span class="p">[</span><span class="n">ctxt</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">net</span><span class="p">]))</span>
+</pre></div>
+</div>
+<p>The <em>workers</em> MultiResource works like a dictionary in that it can be
+accessed with a key. For every new key that is used with workers, a new
+instance of the template resource is created; this is giving the
+instance identity, and it will acquire a name based on the key:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">inst2</span> <span class="o">=</span> <span class="n">MultipleServers</span><span class="p">(</span><span class="s2">&quot;two&quot;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">len</span><span class="p">(</span><span class="n">inst2</span><span class="o">.</span><span class="n">workers</span><span class="p">)</span>
+<span class="go">0</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">5</span><span class="p">):</span>
+<span class="gp">... </span>    <span class="n">_</span> <span class="o">=</span> <span class="n">inst2</span><span class="o">.</span><span class="n">workers</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+<span class="gp">...</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">len</span><span class="p">(</span><span class="n">inst2</span><span class="o">.</span><span class="n">workers</span><span class="p">)</span>
+<span class="go">5</span>
+<span class="go">&gt;&gt;&gt;</span>
+</pre></div>
+</div>
+<p>Keys are always coerced to strings, and for each new instance of the
+MultiResource template that is created, the original name is appened
+with ‘_{key}’ to make each instance distinct.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="k">for</span> <span class="n">w</span> <span class="ow">in</span> <span class="n">inst2</span><span class="o">.</span><span class="n">workers</span><span class="o">.</span><span class="n">instances</span><span class="p">()</span><span class="o">.</span><span class="n">values</span><span class="p">():</span>
+<span class="gp">... </span>    <span class="nb">print</span> <span class="n">w</span><span class="o">.</span><span class="n">name</span>
+<span class="gp">...</span>
+<span class="go">worker_1</span>
+<span class="go">worker_0</span>
+<span class="go">worker_3</span>
+<span class="go">worker_2</span>
+<span class="go">worker_4</span>
+<span class="go">&gt;&gt;&gt;</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="resource-groups">
+<h3>Resource Groups<a class="headerlink" href="#resource-groups" title="Permalink to this headline">¶</a></h3>
+<p>If you require a group of different resources to be provisioned as a
+unit, the ResourceGroup() wrapper provides a way to define a set of
+resources that will be provisioned as a whole. The following example
+shows how the boilerplate gateway resources could be expressed using a
+ResourceGroup().</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">gateway_component</span> <span class="o">=</span> <span class="n">ResourceGroup</span><span class="p">(</span><span class="s2">&quot;gateway&quot;</span><span class="p">,</span>
+                     <span class="n">net</span><span class="o">=</span><span class="n">Network</span><span class="p">(</span><span class="s2">&quot;actuator_ex1_net&quot;</span><span class="p">),</span>
+                     <span class="n">subnet</span><span class="o">=</span><span class="n">Subnet</span><span class="p">(</span><span class="s2">&quot;actuator_ex1_subnet&quot;</span><span class="p">,</span>
+                                   <span class="n">ctxt</span><span class="o">.</span><span class="n">comp</span><span class="o">.</span><span class="n">container</span><span class="o">.</span><span class="n">net</span><span class="p">,</span>
+                                   <span class="s2">&quot;192.168.23.0/24&quot;</span><span class="p">,</span>
+                                   <span class="n">dns_nameservers</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;8.8.8.8&#39;</span><span class="p">]),</span>
+                     <span class="n">router</span><span class="o">=</span><span class="n">Router</span><span class="p">(</span><span class="s2">&quot;actuator_ex1_router&quot;</span><span class="p">),</span>
+                     <span class="n">gateway</span><span class="o">=</span><span class="n">RouterGateway</span><span class="p">(</span><span class="s2">&quot;actuator_ex1_gateway&quot;</span><span class="p">,</span>
+                                           <span class="n">ctxt</span><span class="o">.</span><span class="n">comp</span><span class="o">.</span><span class="n">container</span><span class="o">.</span><span class="n">router</span><span class="p">,</span>
+                                           <span class="s2">&quot;external&quot;</span><span class="p">),</span>
+                     <span class="n">rinter</span><span class="o">=</span><span class="n">RouterInterface</span><span class="p">(</span><span class="s2">&quot;actuator_ex1_rinter&quot;</span><span class="p">,</span>
+                                            <span class="n">ctxt</span><span class="o">.</span><span class="n">comp</span><span class="o">.</span><span class="n">container</span><span class="o">.</span><span class="n">router</span><span class="p">,</span>
+                                            <span class="n">ctxt</span><span class="o">.</span><span class="n">comp</span><span class="o">.</span><span class="n">container</span><span class="o">.</span><span class="n">subnet</span><span class="p">))</span>
+
+
+<span class="k">class</span> <span class="nc">SingleOpenstackServer</span><span class="p">(</span><span class="n">InfraModel</span><span class="p">):</span>
+  <span class="n">gateway</span> <span class="o">=</span> <span class="n">gateway_component</span>
+  <span class="n">server</span> <span class="o">=</span> <span class="n">Server</span><span class="p">(</span><span class="s2">&quot;actuator1&quot;</span><span class="p">,</span> <span class="s2">&quot;Ubuntu 13.10&quot;</span><span class="p">,</span> <span class="s2">&quot;m1.small&quot;</span><span class="p">,</span>
+                  <span class="n">nics</span><span class="o">=</span><span class="p">[</span><span class="n">ctxt</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">gateway</span><span class="o">.</span><span class="n">net</span><span class="p">])</span>
+  <span class="n">fip</span> <span class="o">=</span> <span class="n">FloatingIP</span><span class="p">(</span><span class="s2">&quot;actuator_ex1_float&quot;</span><span class="p">,</span> <span class="n">ctxt</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">server</span><span class="p">,</span>
+                   <span class="n">ctxt</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">server</span><span class="o">.</span><span class="n">iface0</span><span class="o">.</span><span class="n">addr0</span><span class="p">,</span> <span class="n">pool</span><span class="o">=</span><span class="s2">&quot;external&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>The keyword args used in creating the ResourceGroup become the
+attributes of the instances of the group.</p>
+<p>If you require a group of different resources to be provisioned together
+repeatedly, the MultiResourceGroup() wrapper provides a way to define a
+template of multiple resources that will be provisioned together.
+MultiResourceGroup() is simply a shorthand for wrapping a ResourceGroup
+in a MultiResource. Any resource (including ResourceGroups and
+MultiResources) can appear in a MultiResourceGroup.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">actuator</span> <span class="kn">import</span> <span class="n">InfraModel</span><span class="p">,</span> <span class="n">MultiResource</span><span class="p">,</span> <span class="n">MultiResourceGroup</span><span class="p">,</span> <span class="n">ctxt</span>
+<span class="kn">from</span> <span class="nn">actuator.provisioners.openstack.resources</span> <span class="kn">import</span> <span class="p">(</span><span class="n">Server</span><span class="p">,</span> <span class="n">Network</span><span class="p">,</span>
+                                                       <span class="n">Subnet</span><span class="p">,</span>
+                                                       <span class="n">FloatingIP</span><span class="p">,</span>
+                                                       <span class="n">Router</span><span class="p">,</span>
+                                                       <span class="n">RouterGateway</span><span class="p">,</span>
+                                                       <span class="n">RouterInterface</span><span class="p">)</span>
+
+<span class="k">class</span> <span class="nc">MultipleGroups</span><span class="p">(</span><span class="n">InfraModel</span><span class="p">):</span>
+  <span class="c1">#</span>
+  <span class="c1"># First, declare the common networking resources</span>
+  <span class="c1">#</span>
+  <span class="n">with_resources</span><span class="p">(</span><span class="o">**</span><span class="n">gateway_components</span><span class="p">)</span>
+  <span class="c1">#</span>
+  <span class="c1"># now declare the &quot;foreman&quot;; this will be the only server the outside</span>
+  <span class="c1"># world can reach, and it will pass off work requests to the leaders</span>
+  <span class="c1"># of clusters. It will need a floating ip for the outside world to</span>
+  <span class="c1"># see it</span>
+  <span class="c1">#</span>
+  <span class="n">foreman</span> <span class="o">=</span> <span class="n">Server</span><span class="p">(</span><span class="s2">&quot;foreman&quot;</span><span class="p">,</span> <span class="s2">&quot;Ubuntu 13.10&quot;</span><span class="p">,</span> <span class="s2">&quot;m1.small&quot;</span><span class="p">,</span>
+                   <span class="n">nics</span><span class="o">=</span><span class="p">[</span><span class="n">ctxt</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">net</span><span class="p">])</span>
+  <span class="n">fip</span> <span class="o">=</span> <span class="n">FloatingIP</span><span class="p">(</span><span class="s2">&quot;actuator_ex3_float&quot;</span><span class="p">,</span> <span class="n">ctxt</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">foreman</span><span class="p">,</span>
+                   <span class="n">ctxt</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">foreman</span><span class="o">.</span><span class="n">iface0</span><span class="o">.</span><span class="n">addr0</span><span class="p">,</span> <span class="n">pool</span><span class="o">=</span><span class="s2">&quot;external&quot;</span><span class="p">)</span>
+  <span class="c1">#</span>
+  <span class="c1"># finally, declare a &quot;cluster&quot;; a leader that coordinates the</span>
+  <span class="c1"># workers in the cluster, which operate under the leader&#39;s direction</span>
+  <span class="c1">#</span>
+  <span class="n">cluster</span> <span class="o">=</span> <span class="n">MultiResourceGroup</span><span class="p">(</span><span class="s2">&quot;cluster&quot;</span><span class="p">,</span>
+                                <span class="n">leader</span><span class="o">=</span><span class="n">Server</span><span class="p">(</span><span class="s2">&quot;leader&quot;</span><span class="p">,</span> <span class="s2">&quot;Ubuntu 13.10&quot;</span><span class="p">,</span>
+                                              <span class="s2">&quot;m1.small&quot;</span><span class="p">,</span>
+                                              <span class="n">nics</span><span class="o">=</span><span class="p">[</span><span class="n">ctxt</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">net</span><span class="p">]),</span>
+                                <span class="n">workers</span><span class="o">=</span><span class="n">MultiResource</span><span class="p">(</span>
+                                           <span class="n">Server</span><span class="p">(</span><span class="s2">&quot;cluster_node&quot;</span><span class="p">,</span>
+                                                  <span class="s2">&quot;Ubuntu 13.10&quot;</span><span class="p">,</span>
+                                                  <span class="s2">&quot;m1.small&quot;</span><span class="p">,</span>
+                                                  <span class="n">nics</span><span class="o">=</span><span class="p">[</span><span class="n">ctxt</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">net</span><span class="p">])))</span>
+</pre></div>
+</div>
+<p>The keyword args used in creating the ResourceGroup become the
+attributes of the instances of the group; hence the following
+expressions are fine:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">inst3</span> <span class="o">=</span> <span class="n">MultipleGroups</span><span class="p">(</span><span class="s2">&quot;three&quot;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">len</span><span class="p">(</span><span class="n">inst3</span><span class="o">.</span><span class="n">cluster</span><span class="p">)</span>
+<span class="go">0</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">for</span> <span class="n">region</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">&quot;london&quot;</span><span class="p">,</span> <span class="s2">&quot;ny&quot;</span><span class="p">,</span> <span class="s2">&quot;tokyo&quot;</span><span class="p">):</span>
+<span class="gp">... </span>    <span class="n">_</span> <span class="o">=</span> <span class="n">inst3</span><span class="o">.</span><span class="n">cluster</span><span class="p">[</span><span class="n">region</span><span class="p">]</span>
+<span class="gp">...</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">len</span><span class="p">(</span><span class="n">inst3</span><span class="o">.</span><span class="n">cluster</span><span class="p">)</span>
+<span class="go">3</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">inst3</span><span class="o">.</span><span class="n">cluster</span><span class="p">[</span><span class="s2">&quot;ny&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">leader</span><span class="o">.</span><span class="n">iface0</span><span class="o">.</span><span class="n">addr0</span>
+<span class="go">&lt;actuator.modeling.ModelInstanceReference object at 0x7fc9df79f090&gt;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">inst3</span><span class="o">.</span><span class="n">cluster</span><span class="p">[</span><span class="s2">&quot;ny&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">workers</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+<span class="go">&lt;actuator.modeling.ModelInstanceReference object at 0x7fc9df79f250&gt;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">inst3</span><span class="o">.</span><span class="n">cluster</span><span class="p">[</span><span class="s2">&quot;ny&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">workers</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">iface0</span><span class="o">.</span><span class="n">addr0</span>
+<span class="go">&lt;actuator.modeling.ModelInstanceReference object at 0x7fc9df79f290&gt;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">len</span><span class="p">(</span><span class="n">inst3</span><span class="o">.</span><span class="n">cluster</span><span class="p">[</span><span class="s2">&quot;ny&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">workers</span><span class="p">)</span>
+<span class="go">1</span>
+<span class="go">&gt;&gt;&gt;</span>
+</pre></div>
+</div>
+<p>This model will behave similarly to the MultiServer model above; that
+is, the <em>cluster</em> attribute can be treated like a dictionary and keys
+will cause a new instance of the MultiResourceGroup to be created. Note
+also that you can nest MultiResources in MultiResourceGroups, and vice
+versa.</p>
+</div>
+<div class="section" id="model-references-context-expressions-and-the-nexus">
+<h3>Model References, Context Expressions, and the Nexus<a class="headerlink" href="#model-references-context-expressions-and-the-nexus" title="Permalink to this headline">¶</a></h3>
+<p>A few of the examples above have shown that accessing model attributes
+results in a reference object of some sort. These objects are the key to
+declaratively relating aspects of various models to one another. For
+instance, a reference to the attribute that stores the IP address of a
+provisioned server can be used as the value of a variable in the
+namespace model, and once the IP address is known, the variable will
+have a meaningful value.</p>
+<p>There are three different ways to get references to parts of a model:
+first through the use of <em>model references</em>, which are direct attribute
+accesses to model or model instance objects. This approach can only be
+used after a model class has already been created; this means that if a
+reference between sibling members is required in the middle of a model
+class definition, model references aren’t yet available, and hence can’t
+be used.</p>
+<p>The second method is through the use of <em>context expressions</em>. A context
+expression provides a way to express a reference to objects and models
+that don’t exist yet– the expression’s evaluation is delayed until the
+reference it represents exists, and only then does the expression yield
+an actual reference. Additionally, context expressions provide a way to
+express references that include keyed lookups into Multi* wrappers, but
+will defer the lookup until needed. These two characteristics allow
+context expressions to be used in a number of ways that a direct model
+reference can’t.</p>
+<p>The third is via the <em>nexus</em>. The nexus is a concentration point for all
+of the models in a particular model set, and provides a way for one
+model to logically access a related model without actually knowing its
+name. This is useful when one model needs to generate a context
+expression to another model that may rely on context information such as
+the current component’s name. All models contain a nexus, and the
+context object also contains a reference to the nexus that makes it easy
+to reach any other model in a model set in a context expression.</p>
+<div class="section" id="model-references">
+<h4>Model References<a class="headerlink" href="#model-references" title="Permalink to this headline">¶</a></h4>
+<p>Once a model class has been defined, you can create expressions that
+refer to attributes of resources in the class:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">SingleOpenstackServer</span><span class="o">.</span><span class="n">server</span>
+<span class="go">&lt;actuator.modeling.ModelReference object at 0x7fc9df779d10&gt;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">SingleOpenstackServer</span><span class="o">.</span><span class="n">server</span><span class="o">.</span><span class="n">iface0</span>
+<span class="go">&lt;actuator.modeling.ModelReference object at 0x7fc9df779cd0&gt;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">SingleOpenstackServer</span><span class="o">.</span><span class="n">server</span><span class="o">.</span><span class="n">iface0</span><span class="o">.</span><span class="n">addr0</span>
+<span class="go">&lt;actuator.modeling.ModelReference object at 0x7fc9df779a10&gt;</span>
+<span class="go">&gt;&gt;&gt;</span>
+</pre></div>
+</div>
+<p>Likewise, you can create references to attributes on instances of the
+model class:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">inst</span><span class="o">.</span><span class="n">server</span>
+<span class="go">&lt;actuator.modeling.ModelInstanceReference object at 0x7fc9df7280d0&gt;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">inst</span><span class="o">.</span><span class="n">server</span><span class="o">.</span><span class="n">iface0</span>
+<span class="go">&lt;actuator.modeling.ModelInstanceReference object at 0x7fc9df728110&gt;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">inst</span><span class="o">.</span><span class="n">server</span><span class="o">.</span><span class="n">iface0</span><span class="o">.</span><span class="n">addr0</span>
+<span class="go">&lt;actuator.modeling.ModelInstanceReference object at 0x7fc9df728150&gt;</span>
+<span class="go">&gt;&gt;&gt;</span>
+</pre></div>
+</div>
+<p>All of these expressions result in a reference object, either a model
+reference or a model instance reference. <em>References</em> are objects that
+serve as a logical “pointer” to a resource or attribute of a model.
+<em>Model references</em> are logical references into a model; there may not be
+an actual resource or attribute underlying the reference. <em>Model
+instance references</em> (or just “instance references”) are references into
+an <em>instance</em> of a model; they refer to an actual resource or attribute
+(although the value of either may not have been determined yet).
+Instance references can only be created relative to an instance of a
+model, or by transforming a model reference to an instance reference
+using an instance of a model. An example here will help:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1">#re-using the definition of SingleOpenstackServer from above...</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">inst</span> <span class="o">=</span> <span class="n">SingleOpenstackServer</span><span class="p">(</span><span class="s2">&quot;refs&quot;</span><span class="p">)</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">modref</span> <span class="o">=</span> <span class="n">SingleOpenstackServer</span><span class="o">.</span><span class="n">server</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">instref</span> <span class="o">=</span> <span class="n">inst</span><span class="o">.</span><span class="n">server</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">modref</span> <span class="ow">is</span> <span class="ow">not</span> <span class="n">instref</span>
+<span class="kc">True</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">instref</span> <span class="ow">is</span> <span class="n">inst</span><span class="o">.</span><span class="n">get_inst_ref</span><span class="p">(</span><span class="n">modref</span><span class="p">)</span>
+<span class="kc">True</span>
+<span class="o">&gt;&gt;&gt;</span>
+</pre></div>
+</div>
+<p>Model references provide a number of capabilities:</p>
+<ul class="simple">
+<li><p>They serve as bookmarks into models</p></li>
+<li><p>They behave something like a
+<a class="reference external" href="https://en.wikipedia.org/wiki/Futures_and_promises">future</a> in
+that they provide a reference to a value that hasn’t been determined
+yet</p></li>
+<li><p>They provide a way to make logical connections between models in
+order to share information</p></li>
+<li><p>They serve as a way to logically identify resources that should be
+provisioned</p></li>
+</ul>
+<p>For example, suppose a model elsewhere needs to know the first IP
+address on the first interface of the server from the
+SingleOpenstackServer model. That IP address won’t be known until the
+server is provisioned, but a reference to this piece of information can
+be created by the following expression:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">SingleOpenstackServer</span><span class="o">.</span><span class="n">server</span><span class="o">.</span><span class="n">iface0</span><span class="o">.</span><span class="n">addr0</span>
+</pre></div>
+</div>
+<p>The rest of Actuator knows how to deal with these references and how to
+extract the underlying values when they become available. Every
+attribute of all objects in a model produce a reference, and the
+underying value that the reference is pointing to can be accessed with
+the <em>value()</em> method:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">SingleOpenstackServer</span><span class="o">.</span><span class="n">server</span><span class="o">.</span><span class="n">name</span><span class="o">.</span><span class="n">value</span><span class="p">()</span>
+<span class="go">actuator1</span>
+<span class="go">&gt;&gt;&gt;</span>
+</pre></div>
+</div>
+<p>Since model references are the means to make connections between models,
+we’ll look at these in more detail in the section below on <a class="reference external" href="#nsmodels">namespace
+models</a>.</p>
+<div class="section" id="when-references-are-created">
+<h5>When references are created<a class="headerlink" href="#when-references-are-created" title="Permalink to this headline">¶</a></h5>
+<p>Actuator always creates references when accessing model components via
+the model class. However, the value of non-model attributes are provide
+as-as when accessed:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">T</span><span class="p">(</span><span class="n">InfraModel</span><span class="p">):</span>
+    <span class="n">r</span> <span class="o">=</span> <span class="n">Router</span><span class="p">(</span><span class="s2">&quot;actuator_ex1_router&quot;</span><span class="p">)</span>
+    <span class="n">a</span> <span class="o">=</span> <span class="mi">5</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">T</span><span class="o">.</span><span class="n">r</span>
+<span class="o">&lt;</span><span class="n">actuator</span><span class="o">.</span><span class="n">modeling</span><span class="o">.</span><span class="n">ModelReference</span> <span class="nb">object</span> <span class="n">at</span> <span class="mh">0x7ff2f4aa3650</span><span class="o">&gt;</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">T</span><span class="o">.</span><span class="n">r</span><span class="o">.</span><span class="n">name</span>
+<span class="o">&lt;</span><span class="n">actuator</span><span class="o">.</span><span class="n">modeling</span><span class="o">.</span><span class="n">ModelReference</span> <span class="nb">object</span> <span class="n">at</span> <span class="mh">0x7ff2f4aa34d0</span><span class="o">&gt;</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">T</span><span class="o">.</span><span class="n">a</span>
+<span class="mi">5</span>
+<span class="o">&gt;&gt;&gt;</span>
+</pre></div>
+</div>
+<p>So non-modelling data on a model class can be accessed as normal.</p>
+<p>There is one exception regarding the automatic creation of references,
+and that’s when an attribute one a modelling component starts with ‘_’.
+In this case, the value of the attribute is provided as-is. Using the
+model class T from above:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">t</span><span class="o">.</span><span class="n">r</span><span class="o">.</span><span class="n">admin_state_up</span>
+<span class="go">&lt;actuator.modeling.ModelInstanceReference object at 0x7ff2f4a524d0&gt;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">t</span><span class="o">.</span><span class="n">r</span><span class="o">.</span><span class="n">_admin_state_up</span>
+<span class="go">True</span>
+</pre></div>
+</div>
+<p>When objects outside of a model class are accessed, Actuator never
+creates model references.</p>
+</div>
+</div>
+<div class="section" id="context-expressions">
+<h4>Context Expressions<a class="headerlink" href="#context-expressions" title="Permalink to this headline">¶</a></h4>
+<p>There are circumstances where model references either aren’t possible or
+can’t get the job done. For example, take this fragment of the the
+<a class="reference external" href="#simple_openstack_example">SingleOpenstackServer</a> infra model
+example from above:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">SingleOpenstackServer</span><span class="p">(</span><span class="n">InfraModel</span><span class="p">):</span>
+  <span class="n">router</span> <span class="o">=</span> <span class="n">Router</span><span class="p">(</span><span class="s2">&quot;actuator_ex1_router&quot;</span><span class="p">)</span>
+  <span class="n">gateway</span> <span class="o">=</span> <span class="n">RouterGateway</span><span class="p">(</span><span class="s2">&quot;actuator_ex1_gateway&quot;</span><span class="p">,</span> <span class="n">ctxt</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">router</span><span class="p">,</span>
+                          <span class="s2">&quot;external&quot;</span><span class="p">)</span>
+  <span class="n">rinter</span> <span class="o">=</span> <span class="n">RouterInterface</span><span class="p">(</span><span class="s2">&quot;actuator_ex1_rinter&quot;</span><span class="p">,</span> <span class="n">ctxt</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">router</span><span class="p">,</span>
+                           <span class="n">ctxt</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">subnet</span><span class="p">)</span>
+  <span class="c1"># etc...</span>
+</pre></div>
+</div>
+<p>The RouterGateway and RouterInterface resources both require a model
+reference to a Router resource as their second argument. Now, after the
+SingleOpenstackServer class is defined, this reference would be easy to
+obtain with an expression such as SingleOpenstackServer.router. However,
+within the class defintion, the class object doesn’t exist yet, and so
+trying to use an expression like:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">gateway</span> <span class="o">=</span> <span class="n">RouterGateway</span><span class="p">(</span><span class="s2">&quot;actuator_ex1_gateway&quot;</span><span class="p">,</span>
+                        <span class="n">SingleOpenstackServer</span><span class="o">.</span><span class="n">router</span><span class="p">,</span> <span class="s2">&quot;external&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>will yield a NameError exception saying that “SingleOpenstackServer” is
+not defined.</p>
+<p>Further, you simply can’t supply the actual router object like the
+following:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">SingleOpenstackServer</span><span class="p">(</span><span class="n">InfraModel</span><span class="p">):</span>
+  <span class="n">router</span> <span class="o">=</span> <span class="n">Router</span><span class="p">(</span><span class="s2">&quot;actuator_ex1_router&quot;</span><span class="p">)</span>
+  <span class="n">gateway</span> <span class="o">=</span> <span class="n">RouterGateway</span><span class="p">(</span><span class="s2">&quot;actuator_ex1_gateway&quot;</span><span class="p">,</span> <span class="n">router</span><span class="p">,</span>
+                          <span class="s2">&quot;external&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>As that binds the RouterGateway to an actual Router instance, not a
+to-be-provisioned instance that will appear at a future time when the
+infra is provisioned. There are more subtle reasons why this is
+problematic, such as actually knowing where this instance is from, but
+the end result is the same– an actual object poses more problems in
+modelling than it solves.</p>
+<p>This is where context expressions come in. Every time a component in a
+model is processed by Actuator (be it a resource or some other
+component), a processing context is created. The <em>context</em> wraps up:</p>
+<ul class="simple">
+<li><p>the instance of the model the component is part of,</p></li>
+<li><p>the component itself,</p></li>
+<li><p>and the name of the component.</p></li>
+</ul>
+<p>In a model class, the context is referred to by the global object
+<em>ctxt</em>, and the above three objects can be accessed via ctxt in the
+following way:</p>
+<ul class="simple">
+<li><p>the model instance can be accessed with <em>ctxt.model</em></p></li>
+<li><p>the component itself can be accessed with <em>ctxt.comp</em></p></li>
+<li><p>the component’s name can be accessed with <em>ctxt.name</em></p></li>
+</ul>
+<p>These <em>context expressions</em> provide a way to define a reference to
+another part of the model that will be evaluated only when the reference
+is needed. Repeating the infra model fragment from above:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">SingleOpenstackServer</span><span class="p">(</span><span class="n">InfraModel</span><span class="p">):</span>
+  <span class="n">net</span> <span class="o">=</span> <span class="n">Network</span><span class="p">(</span><span class="s2">&quot;actuator_ex1_net&quot;</span><span class="p">)</span>
+  <span class="n">subnet</span> <span class="o">=</span> <span class="n">Subnet</span><span class="p">(</span><span class="s2">&quot;actuator_ex1_subnet&quot;</span><span class="p">,</span> <span class="n">ctxt</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">net</span><span class="p">,</span>
+                  <span class="s2">&quot;192.168.23.0/24&quot;</span><span class="p">,</span>
+                  <span class="n">dns_nameservers</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;8.8.8.8&#39;</span><span class="p">])</span>
+  <span class="n">router</span> <span class="o">=</span> <span class="n">Router</span><span class="p">(</span><span class="s2">&quot;actuator_ex1_router&quot;</span><span class="p">)</span>
+  <span class="n">gateway</span> <span class="o">=</span> <span class="n">RouterGateway</span><span class="p">(</span><span class="s2">&quot;actuator_ex1_gateway&quot;</span><span class="p">,</span> <span class="n">ctxt</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">router</span><span class="p">,</span>
+                          <span class="s2">&quot;external&quot;</span><span class="p">)</span>
+  <span class="n">rinter</span> <span class="o">=</span> <span class="n">RouterInterface</span><span class="p">(</span><span class="s2">&quot;actuator_ex1_rinter&quot;</span><span class="p">,</span> <span class="n">ctxt</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">router</span><span class="p">,</span>
+                           <span class="n">ctxt</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">subnet</span><span class="p">)</span>
+  <span class="c1"># etc...</span>
+</pre></div>
+</div>
+<p>We can see that when defining the RouterGateway, we can provide the
+required reference to SingleOpenstackServer’s Router by creating a
+context expression that names the router attribute of the
+SingleOpenstackServer model via the ctxt object: <em>ctxt.model.router</em>.
+Likewise, the RouterInterface gets the needed reference to the router in
+the same way, along with a reference to the Subnet with
+<em>ctxt.model.subnet</em>.</p>
+<p>The context object <em>ctxt</em> allows you to access any attribute of a model
+or component reachable from either the model or component. Hence, in the
+same way we were able to access first IP address on the first interface
+with:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">SingleOpenstackServer</span><span class="o">.</span><span class="n">server</span><span class="o">.</span><span class="n">iface</span><span class="o">.</span><span class="n">addr0</span>
+</pre></div>
+</div>
+<p>We can use a context expression to create a reference to this IP using
+the ctxt object:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">ctxt</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">server</span><span class="o">.</span><span class="n">iface</span><span class="o">.</span><span class="n">addr0</span>
+</pre></div>
+</div>
+<p>As mentioned previously, context expressions provide a way to express
+relationships between model components before the model is fully
+defined. Additionally, because they allow references to be evaluated
+later in processing, they are useful in certain circumstances in
+creating references between models. We’ll see examples of these sorts of
+uses below.</p>
+</div>
+<div class="section" id="the-nexus">
+<h4>The Nexus<a class="headerlink" href="#the-nexus" title="Permalink to this headline">¶</a></h4>
+<p>While context expressions provide a convenient way to logically refer to
+components of the current model, sometimes what’s needed is a reference
+to a sibling model that still relies on data from the current context.
+Such references can often be made using a model reference as discussed
+above, but if any data from the current context is required these
+references can’t be used. Or it might be convenient to not explicitly
+name a related model class, as there may be several polymophic models
+that can be used where a cross-model reference is required. It is such
+circumstances that the <em>nexus</em> is useful.</p>
+<p>Each model contains an attribute named ‘nexus’, and the nexus attribute
+serves as an access point for a model to find any of its siblings. If we
+had a model named “model”, then:</p>
+<ul class="simple">
+<li><p>accessing ‘model.nexus.inf’ would provide a reference to the infra
+model for the model set</p></li>
+<li><p>accessing ‘model.nexus.ns’ would provide a reference to the namespace
+model for the model set</p></li>
+<li><p>accessing ‘model.nexus.cfg’ would provide a reference to the config
+model for the model set</p></li>
+<li><p>accessing ‘model.nexus.exe’ would provide a reference to the
+executable model for the model set</p></li>
+</ul>
+<p>Similarly, the nexus can be accessed via the model attribute of the
+‘ctxt’ context object, like:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">ctxt</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">nexus</span><span class="o">.</span><span class="n">inf</span>  <span class="c1"># the infra model</span>
+</pre></div>
+</div>
+<p>Or more briefly, the nexus can be accessed directly on the context
+object like so:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">ctxt</span><span class="o">.</span><span class="n">nexus</span><span class="o">.</span><span class="n">inf</span> <span class="ow">is</span> <span class="n">ctxt</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">nexus</span><span class="o">.</span><span class="n">inf</span>  <span class="c1"># yields the same reference</span>
+</pre></div>
+</div>
+<p>Once you have model reference via the nexus, references to any other
+member of the model can be carried out identically. For example, in the
+section above on the <a class="reference external" href="#resource_group">ResourceGroup</a> container, an
+external ResourceGroup was created. If you needed a reference to the
+Network resource in the group inside the infra model, you could write:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">ctxt</span><span class="o">.</span><span class="n">nexus</span><span class="o">.</span><span class="n">inf</span><span class="o">.</span><span class="n">gateway</span><span class="o">.</span><span class="n">net</span>
+</pre></div>
+</div>
+<p>We’ll see more direct uses of the nexus in the following section.</p>
+</div>
+</div>
+</div>
+<div class="section" id="namespace-models">
+<h2>Namespace models<a class="headerlink" href="#namespace-models" title="Permalink to this headline">¶</a></h2>
+<p>The namespace model provides the means for joining the other Actuator
+models together. It does this by declaring the logical roles of a
+system, relating these roles to the infrastructure elements where the
+roles are to execute, and providing the means to identify what
+configuration task is to be carried out for each role as well as what
+executables are involved with making the role function.</p>
+<p>A namespace model has four aspects. It provides the means to:</p>
+<ol class="arabic simple">
+<li><p>…define the logical execution roles of a system</p></li>
+<li><p>…define the relationships between logical roles and hosts in the
+infra model where the roles are to execute</p></li>
+<li><p>…arrange the roles in a meaningful hierarchy</p></li>
+<li><p>…establish names within the hierachy whose values will impact
+configuration activities and the operation of the roles</p></li>
+</ol>
+<div class="section" id="an-example">
+<h3>An example<a class="headerlink" href="#an-example" title="Permalink to this headline">¶</a></h3>
+<p>Here’s a trivial example that demonstrates the basic features of a
+namespace. It will model two roles, an app server and a computation
+engine, and use the SingleOpenstackServer infra model from above for
+certain values:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">actuator</span> <span class="kn">import</span> <span class="n">Var</span><span class="p">,</span> <span class="n">NamespaceModel</span><span class="p">,</span> <span class="n">Role</span><span class="p">,</span> <span class="n">with_variables</span>
+
+<span class="k">class</span> <span class="nc">SOSNamespace</span><span class="p">(</span><span class="n">NamespaceModel</span><span class="p">):</span>
+  <span class="n">with_variables</span><span class="p">(</span><span class="n">Var</span><span class="p">(</span><span class="s2">&quot;COMP_SERVER_HOST&quot;</span><span class="p">,</span>
+                     <span class="n">SingleOpenstackServer</span><span class="o">.</span><span class="n">server</span><span class="o">.</span><span class="n">iface0</span><span class="o">.</span><span class="n">addr0</span><span class="p">),</span>
+                 <span class="n">Var</span><span class="p">(</span><span class="s2">&quot;COMP_SERVER_PORT&quot;</span><span class="p">,</span> <span class="s1">&#39;8081&#39;</span><span class="p">),</span>
+                 <span class="n">Var</span><span class="p">(</span><span class="s2">&quot;EXTERNAL_APP_SERVER_IP&quot;</span><span class="p">,</span>
+                     <span class="n">SingleOpenstackServer</span><span class="o">.</span><span class="n">fip</span><span class="o">.</span><span class="n">ip</span><span class="p">),</span>
+                 <span class="n">Var</span><span class="p">(</span><span class="s2">&quot;APP_SERVER_PORT&quot;</span><span class="p">,</span> <span class="s1">&#39;8080&#39;</span><span class="p">))</span>
+
+  <span class="n">app_server</span> <span class="o">=</span> <span class="p">(</span><span class="n">Role</span><span class="p">(</span><span class="s2">&quot;app_server&quot;</span><span class="p">,</span>
+                     <span class="n">host_ref</span><span class="o">=</span><span class="n">SingleOpenstackServer</span><span class="o">.</span><span class="n">server</span><span class="p">)</span>
+                   <span class="o">.</span><span class="n">add_variable</span><span class="p">(</span>
+                        <span class="n">Var</span><span class="p">(</span><span class="s2">&quot;APP_SERVER_HOST&quot;</span><span class="p">,</span>
+                            <span class="n">SingleOpenstackServer</span><span class="o">.</span><span class="n">server</span><span class="o">.</span><span class="n">iface0</span><span class="o">.</span><span class="n">addr0</span><span class="p">)))</span>
+
+  <span class="n">compute_server</span> <span class="o">=</span> <span class="n">Role</span><span class="p">(</span><span class="s2">&quot;compute_server&quot;</span><span class="p">,</span>
+                        <span class="n">host_ref</span><span class="o">=</span><span class="n">SingleOpenstackServer</span><span class="o">.</span><span class="n">server</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>First, some global Vars (variables) are established that capture the
+host and port where the compute_server will be found, the external IP
+where the app_server will be found, and the port number where it can be
+contacted. While the ports are hard coded values, the host IPs are
+determined from the SingleOpenstackServer model by creating a model
+reference to the model attribute where the IP will become available.
+Since these Vars are defined at the model (global) level, they are
+visible to all roles.</p>
+<p>Next comes the app_server role, which is declared with a call to Role.
+Besides a name, Role is supplied a host_ref in the form of Server model
+reference from the SingleOpenstackserver model. This tells the namespace
+that this role’s configuration tasks and executables will be run on
+whatever host is provisioned for this part of the model. The app_server
+role is also supplied a private Var object that captures the host IP
+where the server will run. While the app_server binds to an IP on the
+subnet, the FloatingIP associated with this subnet IP will enable the
+server to be reached from the outside world.</p>
+<p>Finally, we declare the compute_server Role. Similar to the app_server
+Role, the compute_server Role identifies the Server where it will run
+by setting the host_ref keyword to a infra model reference for the
+Server to use. In this example, both Roles will be run on the same
+server.</p>
+<p>When an instance of the namespace is created, useful questions can be
+posed to the instance: * We can ask for a list of roles * We can ask
+for all the Vars (and their values) from the perspective of a specific
+role * We can identify any Vars whose value can’t be resolved from the
+perspective of each role * We can ask to compute the necessary
+provisioning based on the namespace and an infra model instance</p>
+<p>These operations look something like this:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">ns</span> <span class="o">=</span> <span class="n">SOSNamespace</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">for</span> <span class="n">r</span> <span class="ow">in</span> <span class="n">ns</span><span class="o">.</span><span class="n">get_roles</span><span class="p">()</span><span class="o">.</span><span class="n">values</span><span class="p">():</span>
+<span class="gp">... </span>    <span class="nb">print</span> <span class="s2">&quot;Role: </span><span class="si">%s</span><span class="s2">, Vars:&quot;</span> <span class="o">%</span> <span class="n">r</span><span class="o">.</span><span class="n">name</span>
+<span class="gp">... </span>    <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">r</span><span class="o">.</span><span class="n">get_visible_vars</span><span class="p">()</span><span class="o">.</span><span class="n">values</span><span class="p">():</span>
+<span class="gp">... </span>            <span class="n">value</span> <span class="o">=</span> <span class="n">v</span><span class="o">.</span><span class="n">get_value</span><span class="p">(</span><span class="n">r</span><span class="p">)</span>
+<span class="gp">...</span>
+<span class="gp">... </span>            <span class="nb">print</span> <span class="s2">&quot;</span><span class="si">%s</span><span class="s2">=</span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">v</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">value</span> <span class="k">if</span> <span class="n">value</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="s2">&quot;&lt;UNRESOLVED&gt;&quot;</span><span class="p">)</span>
+<span class="gp">...</span>
+<span class="go">Role: compute_server, Vars:</span>
+<span class="go">COMP_SERVER_HOST=&lt;UNRESOLVED&gt;</span>
+<span class="go">COMP_SERVER_PORT=8081</span>
+<span class="go">APP_SERVER_PORT=8080</span>
+<span class="go">EXTERNAL_APP_SERVER_IP=&lt;UNRESOLVED&gt;</span>
+<span class="go">Role: app_server, Vars:</span>
+<span class="go">APP_SERVER_HOST=&lt;UNRESOLVED&gt;</span>
+<span class="go">COMP_SERVER_HOST=&lt;UNRESOLVED&gt;</span>
+<span class="go">COMP_SERVER_PORT=8081</span>
+<span class="go">APP_SERVER_PORT=8080</span>
+<span class="go">EXTERNAL_APP_SERVER_IP=&lt;UNRESOLVED&gt;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">sos</span> <span class="o">=</span> <span class="n">SingleOpenstackServer</span><span class="p">(</span><span class="s2">&quot;sos&quot;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">provisionables</span> <span class="o">=</span> <span class="n">ns</span><span class="o">.</span><span class="n">compute_provisioning_for_environ</span><span class="p">(</span><span class="n">sos</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">provisionables</span>
+<span class="go">set([&lt;actuator.provisioners.openstack.resources.RouterGateway object at 0x7fc9df72e610&gt;, &lt;actuator.provisioners.openstack.resources.Server object at 0x7fc9df72e450&gt;, &lt;actuator.provisioners.openstack.resources.FloatingIP object at 0x7fc9df72e090&gt;, &lt;actuator.provisioners.openstack.resources.Router object at 0x7fc9df72e6d0&gt;, &lt;actuator.provisioners.openstack.resources.RouterInterface object at 0x7fc9df72e510&gt;, &lt;actuator.provisioners.openstack.resources.Subnet object at 0x7fc9df72e490&gt;, &lt;actuator.provisioners.openstack.resources.Network object at 0x7fc9df72e590&gt;])</span>
+<span class="go">&gt;&gt;&gt;</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="dynamic-namespaces">
+<h3>Dynamic Namespaces<a class="headerlink" href="#dynamic-namespaces" title="Permalink to this headline">¶</a></h3>
+<p>The namespace shown above is static in nature. Although some of the
+values for Var objects are supplied dynamically, the namespace itself
+has a static number of roles and structure.</p>
+<p>Actuator allows for more dynamic namespaces to be constructed, in
+particular in support of arbitrary numbers of roles. By coupling such a
+namespace with an infra model that uses MultiResource or
+MultiResourceGroup elements, appropriately sized infra can be identified
+and provisioned depending on the nature of the dynamic namespace.</p>
+<p>The best way to understand this is with an example. We’ll devise a
+trivial computational grid: besides the normal gateway elements, the
+infrastructure will contain a “foreman” to coordinate the computational
+activities of a variable number of “workers”, each on a seperate server.</p>
+<p>The <a class="reference external" href="#multiservers">MultipleServers</a> infra model from above fits this
+pattern, so we’ll define a dynamic namespace model that grows roles that
+refer back to this infra model in order to acquire the appropriate
+infrastructure to meet the namespace’s needs.</p>
+<p>We’ll use two different techniques for creating a suitable dynamic
+namespace. In the first, we’ll create a class factory function that
+defines a new namespace class with the appropriate number of worker
+Roles. In the second, we’ll use some additional features of Actuator to
+express the same capabilities in a more concise declarative way.</p>
+<p>First, the class factory approach:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">grid_namespace_factory</span><span class="p">(</span><span class="n">num_workers</span><span class="o">=</span><span class="mi">10</span><span class="p">):</span>
+
+  <span class="k">class</span> <span class="nc">GridNamespace</span><span class="p">(</span><span class="n">NamespaceModel</span><span class="p">):</span>
+    <span class="n">with_variables</span><span class="p">(</span><span class="n">Var</span><span class="p">(</span><span class="s2">&quot;FOREMAN_EXTERNAL_IP&quot;</span><span class="p">,</span> <span class="n">MultipleServers</span><span class="o">.</span><span class="n">fip</span><span class="o">.</span><span class="n">ip</span><span class="p">),</span>
+                   <span class="n">Var</span><span class="p">(</span><span class="s2">&quot;FOREMAN_INTERNAL_IP&quot;</span><span class="p">,</span> <span class="n">MultipleServers</span><span class="o">.</span><span class="n">foreman</span><span class="o">.</span><span class="n">iface0</span><span class="o">.</span><span class="n">addr0</span><span class="p">),</span>
+                   <span class="n">Var</span><span class="p">(</span><span class="s2">&quot;FOREMAN_EXTERNAL_PORT&quot;</span><span class="p">,</span> <span class="s2">&quot;3000&quot;</span><span class="p">),</span>
+                   <span class="n">Var</span><span class="p">(</span><span class="s2">&quot;FOREMAN_WORKER_PORT&quot;</span><span class="p">,</span> <span class="s2">&quot;3001&quot;</span><span class="p">))</span>
+
+    <span class="n">foreman</span> <span class="o">=</span> <span class="n">Role</span><span class="p">(</span><span class="s2">&quot;foreman&quot;</span><span class="p">,</span> <span class="n">host_ref</span><span class="o">=</span><span class="n">MultipleServers</span><span class="o">.</span><span class="n">foreman</span><span class="p">)</span>
+
+    <span class="n">role_dict</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="n">namer</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="s2">&quot;worker_</span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">num_workers</span><span class="p">):</span>
+      <span class="n">role_dict</span><span class="p">[</span><span class="n">namer</span><span class="p">(</span><span class="n">i</span><span class="p">)]</span> <span class="o">=</span> <span class="n">Component</span><span class="p">(</span><span class="n">namer</span><span class="p">(</span><span class="n">i</span><span class="p">),</span> <span class="n">host_ref</span><span class="o">=</span><span class="n">MultipleServers</span><span class="o">.</span><span class="n">workers</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
+
+    <span class="n">with_roles</span><span class="p">(</span><span class="o">**</span><span class="n">role_dict</span><span class="p">)</span>
+
+    <span class="k">del</span> <span class="n">role_dict</span><span class="p">,</span> <span class="n">namer</span>
+
+  <span class="k">return</span> <span class="n">GridNamespace</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>Making a dynamic namespace class in Python is trivial; by simply putting
+the class statement inside a function, each call to the function will
+generate a new class. By supplying parameters to the function, the
+content of the class can be altered.</p>
+<p>In this example, after setting some global Vars in the namespace with
+the with_variables() function, we next create the “foreman” role, and
+use the host_ref keyword argument to associate it with a server in the
+infra model. Next, we set up a dictionary whose keys will eventually
+become other attributes on the namespace class, and whose values will
+become the associated Roles for those attributes. In a for loop, we then
+simply create new instances of Role, associating each with a different
+worker in the MultipleServers infra model
+(host_ref=MultipleServers.workers[i]). We then use the function
+<em>with_roles()</em> to take the content of the dict and attach all the
+created roles to the namespace class. The class finishes by deleting the
+unneeded dict and lambda function. The factory function completes by
+returning an instance of the class that was just defined.</p>
+<p>Now we can use the factory function to create grids of different sizes
+simply by varying the input value to the factory function:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">ns</span> <span class="o">=</span> <span class="n">grid_namespace_factory</span><span class="p">(</span><span class="mi">20</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">ms_inst</span> <span class="o">=</span> <span class="n">MultipleServers</span><span class="p">(</span><span class="s2">&quot;ms&quot;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">provs</span> <span class="o">=</span> <span class="n">ns</span><span class="o">.</span><span class="n">compute_provisioning_for_environ</span><span class="p">(</span><span class="n">ms_inst</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">len</span><span class="p">(</span><span class="n">provs</span><span class="p">)</span>
+<span class="go">27</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">ns</span><span class="o">.</span><span class="n">worker_8</span>
+<span class="go">&lt;actuator.namespace.Role object at 0x02670D10&gt;</span>
+<span class="go">&gt;&gt;&gt;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">ns2</span> <span class="o">=</span> <span class="n">grid_namespace_factory</span><span class="p">(</span><span class="mi">200</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">ms_inst2</span> <span class="o">=</span> <span class="n">MultipleServers</span><span class="p">(</span><span class="s2">&quot;ms2&quot;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">provs2</span> <span class="o">=</span> <span class="n">ns2</span><span class="o">.</span><span class="n">compute_provisioning_for_environ</span><span class="p">(</span><span class="n">ms_inst2</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">len</span><span class="p">(</span><span class="n">provs2</span><span class="p">)</span>
+<span class="go">207</span>
+<span class="go">&gt;&gt;&gt;</span>
+</pre></div>
+</div>
+<p>Now for the second approach, which utilizes some other capabilities of
+Actuator. Namespaces have their own analogs to the infra model’s
+ResourceGroup, MultiResource, and MultiResourceGroup classes: they are
+RoleGroup, MultiRole, and MultiRoleGroup. These are similar to their
+infrastructure counterparts with the exceptions that</p>
+<ol class="arabic simple">
+<li><p>They can contain only Roles or the various Role containers mentinoed
+above;</p></li>
+<li><p>They can have variables (Var objects) attached to them.</p></li>
+</ol>
+<p>Using this approach, the solution looks like the following:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">GridNamespace</span><span class="p">(</span><span class="n">NamespaceModel</span><span class="p">):</span>
+  <span class="n">with_variables</span><span class="p">(</span><span class="n">Var</span><span class="p">(</span><span class="s2">&quot;FOREMAN_EXTERNAL_IP&quot;</span><span class="p">,</span> <span class="n">MultipleServers</span><span class="o">.</span><span class="n">fip</span><span class="o">.</span><span class="n">ip</span><span class="p">),</span>
+                 <span class="n">Var</span><span class="p">(</span><span class="s2">&quot;FOREMAN_INTERNAL_IP&quot;</span><span class="p">,</span> <span class="n">MultipleServers</span><span class="o">.</span><span class="n">foreman</span><span class="o">.</span><span class="n">iface0</span><span class="o">.</span><span class="n">addr0</span><span class="p">),</span>
+                 <span class="n">Var</span><span class="p">(</span><span class="s2">&quot;FOREMAN_EXTERNAL_PORT&quot;</span><span class="p">,</span> <span class="s2">&quot;3000&quot;</span><span class="p">),</span>
+                 <span class="n">Var</span><span class="p">(</span><span class="s2">&quot;FOREMAN_WORKER_PORT&quot;</span><span class="p">,</span> <span class="s2">&quot;3001&quot;</span><span class="p">))</span>
+
+  <span class="n">foreman</span> <span class="o">=</span> <span class="n">Role</span><span class="p">(</span><span class="s2">&quot;foreman&quot;</span><span class="p">,</span> <span class="n">host_ref</span><span class="o">=</span><span class="n">MultipleServers</span><span class="o">.</span><span class="n">foreman</span><span class="p">)</span>
+
+  <span class="n">grid</span> <span class="o">=</span> <span class="n">MultiRole</span><span class="p">(</span><span class="n">Role</span><span class="p">(</span><span class="s2">&quot;node&quot;</span><span class="p">,</span> <span class="n">host_ref</span><span class="o">=</span><span class="n">ctxt</span><span class="o">.</span><span class="n">nexus</span><span class="o">.</span><span class="n">inf</span><span class="o">.</span><span class="n">workers</span><span class="p">[</span><span class="n">ctxt</span><span class="o">.</span><span class="n">name</span><span class="p">]))</span>
+</pre></div>
+</div>
+<p>This approach doesn’t use a factory; instead, it uses MultiRole to
+define a “template” Role object to create instances from each new key
+supplied to the “grid” attribute of the namespace model. After defining
+a namespace class this way, one simply creates instances of the class
+and then, in a manner similar to creating new resources on an infra
+model, uses new keys to create new Roles on the namespace instance.
+These new role instances will in turn create new worker instances on a
+MultiServers model instance:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">ns</span> <span class="o">=</span> <span class="n">GridNamespace</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">ms_infra</span> <span class="o">=</span> <span class="n">MultipleServers</span><span class="p">(</span><span class="s2">&quot;ms1&quot;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">20</span><span class="p">):</span>
+<span class="gp">... </span>    <span class="n">_</span> <span class="o">=</span> <span class="n">ns</span><span class="o">.</span><span class="n">grid</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+<span class="gp">...</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">provs</span> <span class="o">=</span> <span class="n">ns</span><span class="o">.</span><span class="n">compute_provisioning_for_environ</span><span class="p">(</span><span class="n">ms_infra</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">len</span><span class="p">(</span><span class="n">provs</span><span class="p">)</span>
+<span class="go">27</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">ns2</span> <span class="o">=</span> <span class="n">GridNamespace</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">ms_infra2</span> <span class="o">=</span> <span class="n">MultipleServers</span><span class="p">(</span><span class="s2">&quot;ms2&quot;</span><span class="p">)</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">200</span><span class="p">):</span>
+<span class="gp">... </span>    <span class="n">_</span> <span class="o">=</span> <span class="n">ns2</span><span class="o">.</span><span class="n">grid</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+<span class="gp">...</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">provs2</span> <span class="o">=</span> <span class="n">ns2</span><span class="o">.</span><span class="n">compute_provisioning_for_environ</span><span class="p">(</span><span class="n">ms_infra2</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">len</span><span class="p">(</span><span class="n">provs2</span><span class="p">)</span>
+<span class="go">207</span>
+</pre></div>
+</div>
+<p>Using this approach, we can treat the namespace model like the infra
+model, meaning that we can provide a logical definition of roles and
+drive the creation of physical roles simply by referencing them. These
+references flow through to the infra model, likewise causing dynamic
+infra resources to be created.</p>
+</div>
+<div class="section" id="var-objects">
+<h3>Var objects<a class="headerlink" href="#var-objects" title="Permalink to this headline">¶</a></h3>
+<p>Namespaces and their Roles serve as containers for <em>Var</em> objects. These
+objects provide a means to establish names that can be used symbolically
+for a variety of purposes, such as environment variables for tasks and
+executables, or parameter maps for processing templatized text files
+such as scripts or properties files.</p>
+<p>Vars associate a ‘name’ (the first parameter) with a value (the second
+parameter). The value parameter of a Var can be one of several kinds of
+objects: it may be a plain string, a string with a replacement paremeter
+in it, a reference to an infra model element that results in a string,
+or context expression that results in a string.</p>
+<p>We’ve seen examples of both plain strings and model references as
+values, and now will look at how replacement parameters and context
+expressions work. A replacement parameter takes the form of <em>!{string}</em>;
+whenever this pattern is found, the inner string is extracted and looked
+up as the name for another Var. The lookup repeats; if the value found
+contains ‘!{string}’, the lookup is repeated until no more replacement
+parameters are found. This allows complex replacement patterns to be
+defined.</p>
+<p>Additionally, the hierarchy of roles, containers (MultiRole, RoleGroup,
+and MultiRoleGroup) and the model class is taken into account when
+searching for a variable. If the variable can’t be found defined on the
+current role, the enclosing variable container is searched,
+progressively moving to the model class itself. If the variable can’t be
+found on the model class, then the variable is undefined, and an
+exception may be raised (depending on how the search was initiated).
+This allows for complex replacement patterns to be defined which have
+different parts of the pattern filled in at different levels of the
+namespace.</p>
+<p>The following example will make this more concrete. Here we will create
+a Namespace model that defines a variable “NODE_NAME” that is composed
+of a base name plus an id specific to the node. While NODE_NAME will be
+defined at a global level in the model, the two other variables the
+comprise NODE_NAME, BASE_NAME and NODE_ID, will be defined on
+different model objects.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="k">class</span> <span class="nc">VarExample</span><span class="p">(</span><span class="n">NamespaceModel</span><span class="p">):</span>
+<span class="gp">... </span>  <span class="n">with_variables</span><span class="p">(</span><span class="n">Var</span><span class="p">(</span><span class="s2">&quot;NODE_NAME&quot;</span><span class="p">,</span> <span class="s2">&quot;!</span><span class="si">{BASE_NAME}</span><span class="s2">-!</span><span class="si">{NODE_ID}</span><span class="s2">&quot;</span><span class="p">))</span>
+<span class="gp">... </span>  <span class="n">grid</span> <span class="o">=</span> <span class="p">(</span><span class="n">MultiRole</span><span class="p">(</span><span class="n">Role</span><span class="p">(</span><span class="s2">&quot;worker&quot;</span><span class="p">,</span> <span class="n">variables</span><span class="o">=</span><span class="p">[</span><span class="n">Var</span><span class="p">(</span><span class="s2">&quot;NODE_ID&quot;</span><span class="p">,</span> <span class="n">ctxt</span><span class="o">.</span><span class="n">name</span><span class="p">)]))</span>
+<span class="gp">... </span>           <span class="o">.</span><span class="n">add_variable</span><span class="p">(</span><span class="n">Var</span><span class="p">(</span><span class="s2">&quot;BASE_NAME&quot;</span><span class="p">,</span> <span class="s2">&quot;Grid&quot;</span><span class="p">)))</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">ns</span> <span class="o">=</span> <span class="n">VarExample</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">ns</span><span class="o">.</span><span class="n">grid</span><span class="p">[</span><span class="mi">5</span><span class="p">]</span><span class="o">.</span><span class="n">var_value</span><span class="p">(</span><span class="s2">&quot;NODE_NAME&quot;</span><span class="p">)</span>
+<span class="go">Grid-5</span>
+<span class="go">&gt;&gt;&gt;</span>
+</pre></div>
+</div>
+<p>At the most global level, the NODE_NAME Var is defined with a value
+that contains two replacement parameter patterns. The first, BASE_NAME,
+is a Var defined on the grid MultiRole object, and has a value of
+‘Grid’. The second, NODE_ID, is defined on the Role managed by
+MultiRole, and has a value of <em>ctxt.name</em>. This context expression
+represents the name used to reach this role <em>when the expression is
+evaluated</em>. Context expressions aren’t evaluated until they are used,
+and hence the value of this expression will depend on what node in the
+grid it is evaluated for. In this case, it is evaluateed for ns.grid[5],
+and hence ctxt.name will have a value of ‘5’. For each grid role
+created, the value of ctxt.name will match the key used in ns.grid[key].</p>
+<p>It’s also worth noting in the two different methods used to set Vars on
+namespace model roles or containers. In the first method, Vars can be
+set using the keyword argument “variables”; the value must be an
+iterable (list) of Var objects to set on the role. In the second method,
+Vars are added to a role container with the add_variable() method,
+which takes an arbitrary number of Var objects when called, separated by
+‘,’. The add_variable() method has a return value of the role the
+method was invoked on, and hence the value of VarExample.grid is still
+the MultiRole instance.</p>
+</div>
+<div class="section" id="variable-setting-and-overrides">
+<h3>Variable setting and overrides<a class="headerlink" href="#variable-setting-and-overrides" title="Permalink to this headline">¶</a></h3>
+<p>Vars don’t have to be defined when the namespace model class is defined;
+they can specified as having an empty value (<em>None</em> in Python), and that
+value can be provided later.</p>
+<p>There are two ways to supply a missing Var value: - The add_variables()
+method can be used to supply a Var to a role, role container, or model
+instance after the model has been defined. This is a “destructive” call
+in that if another Var with the same name (same first parameter value)
+already exists on the object, it will be replaced with the Var object in
+the add_variables() call. - The add_override() method is similar to
+add_variables() in that it allows a new Var to be supplied after a
+model instance has been created, but unlike add_variables(), it saves
+the Var in an “override” area which is searched first when a variable
+name is required, leaving the original Var in tact. The override can be
+subsequently cleared out and any original Var values will then be
+visible.</p>
+</div>
+<div class="section" id="variable-references">
+<h3>Variable references<a class="headerlink" href="#variable-references" title="Permalink to this headline">¶</a></h3>
+<p>Sometimes it’s useful to acquire a variable value in other contexts, say
+in the infra model. Actuator provides a way to create a reference to a
+Var’s value, and the reference will be evaluated when it is needed to
+acquire the value in the Var.</p>
+<p>This is accomplished with the ‘v’ attribute. Any variable-containing
+object (namespace model, Role, MultiRole, etc) has a special attribute
+named ‘v’. You can supply the name of a Var after the ‘v’, and this will
+generate a variable reference. To illustrate, let’s look at a namespce
+model with a few different parts:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">GridNamespace</span><span class="p">(</span><span class="n">NamespaceModel</span><span class="p">):</span>
+  <span class="n">with_variables</span><span class="p">(</span><span class="n">Var</span><span class="p">(</span><span class="s2">&quot;FOREMAN_EXTERNAL_IP&quot;</span><span class="p">,</span> <span class="n">ctxt</span><span class="o">.</span><span class="n">nexus</span><span class="o">.</span><span class="n">inf</span><span class="o">.</span><span class="n">fip</span><span class="o">.</span><span class="n">ip</span><span class="p">),</span>
+                 <span class="n">Var</span><span class="p">(</span><span class="s2">&quot;FOREMAN_INTERNAL_IP&quot;</span><span class="p">,</span> <span class="s2">&quot;192.168.1.1&quot;</span><span class="p">),</span>
+                 <span class="n">Var</span><span class="p">(</span><span class="s2">&quot;FOREMAN_EXTERNAL_PORT&quot;</span><span class="p">,</span> <span class="s2">&quot;3000&quot;</span><span class="p">),</span>
+                 <span class="n">Var</span><span class="p">(</span><span class="s2">&quot;FOREMAN_WORKER_PORT&quot;</span><span class="p">,</span> <span class="s2">&quot;3001&quot;</span><span class="p">))</span>
+
+  <span class="n">foreman</span> <span class="o">=</span> <span class="n">Role</span><span class="p">(</span><span class="s2">&quot;foreman&quot;</span><span class="p">,</span> <span class="n">host_ref</span><span class="o">=</span><span class="n">ctxt</span><span class="o">.</span><span class="n">nexus</span><span class="o">.</span><span class="n">inf</span><span class="o">.</span><span class="n">foreman</span><span class="p">,</span>
+                 <span class="n">variables</span><span class="o">=</span><span class="p">[</span><span class="n">Var</span><span class="p">(</span><span class="s2">&quot;MYVAR&quot;</span><span class="p">,</span> <span class="s2">&quot;mine!&quot;</span><span class="p">)])</span>
+
+  <span class="n">grid</span> <span class="o">=</span> <span class="n">MultiRole</span><span class="p">(</span><span class="n">Role</span><span class="p">(</span><span class="s2">&quot;node&quot;</span><span class="p">,</span> <span class="n">host_ref</span><span class="o">=</span><span class="n">ctxt</span><span class="o">.</span><span class="n">nexus</span><span class="o">.</span><span class="n">inf</span><span class="o">.</span><span class="n">workers</span><span class="p">[</span><span class="n">ctxt</span><span class="o">.</span><span class="n">name</span><span class="p">]))</span>
+<span class="n">ns</span> <span class="o">=</span> <span class="n">GridNamespace</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>Each of ns, ns.foreman, ns.grid, and ns.grid[] have a ‘v’ attribute,
+after which we can use a Var name directly to get a Var reference, like
+so:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">ns</span><span class="o">.</span><span class="n">v</span><span class="o">.</span><span class="n">FOREMAN_INTERNAL_IP</span>
+<span class="go">&lt;actuator.namespace.VarReference object at 0x7fadee647a10&gt;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">ns</span><span class="o">.</span><span class="n">foreman</span><span class="o">.</span><span class="n">v</span><span class="o">.</span><span class="n">MYVAR</span>
+<span class="go">&lt;actuator.namespace.VarReference object at 0x7fadee63f810&gt;</span>
+</pre></div>
+</div>
+<p>These objects can be used in other parts of a model where a Var value is
+required. The actual value can be fetched using the ‘value()’ method or
+the shortcut ‘()’:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">ns</span><span class="o">.</span><span class="n">v</span><span class="o">.</span><span class="n">FOREMAN_INTERNAL_IP</span><span class="o">.</span><span class="n">value</span><span class="p">()</span>
+<span class="go">&#39;192.168.1.1&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">ns</span><span class="o">.</span><span class="n">v</span><span class="o">.</span><span class="n">FOREMAN_INTERNAL_IP</span><span class="p">()</span>
+<span class="go">&#39;192.168.1.1&#39;</span>
+</pre></div>
+</div>
+<p>One place these are particularly useful is in</p>
+</div>
+</div>
+<div class="section" id="configuration-models">
+<h2>Configuration models<a class="headerlink" href="#configuration-models" title="Permalink to this headline">¶</a></h2>
+<p>The configuration model is what instructs Actuator to do to the new
+provisioned infrastructure in order to make it ready to run application
+software. The configuration model has two main aspects:</p>
+<ol class="arabic simple">
+<li><p>A declaration of the tasks that need to be performed</p></li>
+<li><p>A declaration of the dependencies between the tasks that will dictate
+the order of performance</p></li>
+</ol>
+<p>Together, this provides Actuator the information it needs to perform all
+configuration tasks on the proper system roles in the proper order.</p>
+<div class="section" id="declaring-tasks">
+<h3>Declaring tasks<a class="headerlink" href="#declaring-tasks" title="Permalink to this headline">¶</a></h3>
+<p>Tasks must be declared relative to a Namespace and its Roles; it is the
+roles that inform the config model where the tasks are to ultimately be
+run. In the following examples, we’ll use the this simple namespace that
+sets up a target role where some files are to be copied, as well as a
+couple of Vars that dictate where the files will go.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">SimpleNamespace</span><span class="p">(</span><span class="n">NamespaceModel</span><span class="p">):</span>
+  <span class="n">with_variables</span><span class="p">(</span><span class="n">Var</span><span class="p">(</span><span class="s2">&quot;DEST&quot;</span><span class="p">,</span> <span class="s2">&quot;/tmp&quot;</span><span class="p">),</span>
+                 <span class="n">Var</span><span class="p">(</span><span class="s2">&quot;PKG&quot;</span><span class="p">,</span> <span class="s2">&quot;actuator&quot;</span><span class="p">),</span>
+                 <span class="n">Var</span><span class="p">(</span><span class="s2">&quot;CMD_TARGET&quot;</span><span class="p">,</span> <span class="s2">&quot;127.0.0.1&quot;</span><span class="p">))</span>
+  <span class="n">copy_target</span> <span class="o">=</span> <span class="n">Role</span><span class="p">(</span><span class="s2">&quot;copy_target&quot;</span><span class="p">,</span> <span class="n">host_ref</span><span class="o">=</span><span class="s2">&quot;!</span><span class="si">{CMD_TARGET}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="n">ns</span> <span class="o">=</span> <span class="n">SimpleNamespace</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>We’ve established several Vars at the model level, one which includes a
+hard-coded IP to use for commands, in this case ‘localhost’, and a
+single role that will be the target of the files we want to copy.
+<em>NOTE</em>: Actuator uses
+<a class="reference external" href="https://pypi.python.org/pypi/paramiko">Paramiko</a> under the covers
+for managing the execution of commands over ssh, and hence for this
+example to work it must be run on a *nix box that has appropriate ssh
+keys set up to allow for passwordless login.</p>
+<p>Declaring tasks is a matter of creating one or more instances of various
+task classes. In this example, we’ll declare two tasks: one which will
+remove any past files copied to the target (only really needed for
+non-dynamic hosts), and another that will copy the files to the target,
+in this case the Actuator package itself.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">os</span><span class="o">,</span> <span class="nn">os.path</span>
+<span class="kn">import</span> <span class="nn">actuator</span>
+<span class="kn">from</span> <span class="nn">actuator</span> <span class="kn">import</span> <span class="n">ConfigModel</span><span class="p">,</span> <span class="n">CopyFileTask</span><span class="p">,</span> <span class="n">CommandTask</span>
+
+<span class="c1">#find the path to actuator; if it is under our cwd, the it won&#39;t be at an absolute path</span>
+<span class="n">actuator_path</span> <span class="o">=</span> <span class="n">actuator</span><span class="o">.</span><span class="vm">__file__</span>
+<span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isabs</span><span class="p">(</span><span class="n">actuator_path</span><span class="p">):</span>
+  <span class="n">actuator_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">getcwd</span><span class="p">(),</span> <span class="s2">&quot;!</span><span class="si">{PKG}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+<span class="k">class</span> <span class="nc">SimpleConfig</span><span class="p">(</span><span class="n">ConfigModel</span><span class="p">):</span>
+  <span class="n">cleanup</span> <span class="o">=</span> <span class="n">CommandTask</span><span class="p">(</span><span class="s2">&quot;clean&quot;</span><span class="p">,</span> <span class="s2">&quot;/bin/rm -f !</span><span class="si">{PKG}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">chdir</span><span class="o">=</span><span class="s2">&quot;!</span><span class="si">{DEST}</span><span class="s2">&quot;</span><span class="p">,</span>
+                        <span class="n">task_role</span><span class="o">=</span><span class="n">SimpleNamespace</span><span class="o">.</span><span class="n">copy_target</span><span class="p">)</span>
+  <span class="n">copy</span> <span class="o">=</span> <span class="n">CopyFileTask</span><span class="p">(</span><span class="s2">&quot;copy-file&quot;</span><span class="p">,</span> <span class="s2">&quot;!</span><span class="si">{DEST}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">src</span><span class="o">=</span><span class="n">actuator_path</span><span class="p">,</span>
+                      <span class="n">task_role</span><span class="o">=</span><span class="n">SimpleNamespace</span><span class="o">.</span><span class="n">copy_target</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>This config model is set up to run the cleanup and copy tasks on
+whatever host is identified by the value of the <em>task_role</em> keyword
+argument. Note the use of replacement parameters in the various argument
+strings to the tasks; these will be evaluated against the available Vars
+visible to the namespace role identified by task_role.</p>
+<p>Once a a config model has been created, it can be given to an execution
+agent for processing against a specific namespace:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">actuator.exec_agents.paramiko.agent</span> <span class="kn">import</span> <span class="n">ParamikoExecutionAgent</span>
+<span class="n">cfg</span> <span class="o">=</span> <span class="n">SimpleConfig</span><span class="p">()</span>
+<span class="n">ea</span> <span class="o">=</span> <span class="n">ParamikoExecutionAgent</span><span class="p">(</span><span class="n">config_model_instance</span><span class="o">=</span><span class="n">cfg</span><span class="p">,</span>
+                           <span class="n">namespace_model_instance</span><span class="o">=</span><span class="n">ns</span><span class="p">)</span>
+<span class="n">ea</span><span class="o">.</span><span class="n">start_performing_tasks</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>If all ssh keys have been set up properly, Actuator will be able to
+execute these tasks on the host of the role named with
+SimpleNamespace.copy_target. However, this isn’t enough to get proper
+results, which will be discussed next.</p>
+</div>
+<div class="section" id="declaring-dependencies">
+<h3>Declaring dependencies<a class="headerlink" href="#declaring-dependencies" title="Permalink to this headline">¶</a></h3>
+<p>This is a fully functional config model, but there’s a good chance it
+will give wrong or inconsistent results. The reason is that Actuator
+hasn’t been told anything about the order of performing the config
+tasks. Hence, Actuator will perform these tasks in parallel, and the end
+result will simply depend on the relative scheduling timings of the ssh
+sessions set up for each task.</p>
+<p>What we want to do is add dependency information to the model so that
+Actuator knows the proper order to perform the tasks. To do this, we use
+the with_dependencies() function and the ‘|’ and ‘&amp;’ symbols to
+describe the dependencies between tasks. Adding this to the above config
+model, we would get the following:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">os</span><span class="o">,</span> <span class="nn">os.path</span>
+<span class="kn">import</span> <span class="nn">actuator</span>
+<span class="kn">from</span> <span class="nn">actuator</span> <span class="kn">import</span> <span class="n">ConfigModel</span><span class="p">,</span> <span class="n">CopyFileTask</span><span class="p">,</span> <span class="n">CommandTask</span>
+
+<span class="c1">#find the path to actuator; if it is under our cwd, the it won&#39;t be at an absolute path</span>
+<span class="n">actuator_path</span> <span class="o">=</span> <span class="n">actuator</span><span class="o">.</span><span class="vm">__file__</span>
+<span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isabs</span><span class="p">(</span><span class="n">actuator_path</span><span class="p">):</span>
+  <span class="n">actuator_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">getcwd</span><span class="p">(),</span> <span class="s2">&quot;!</span><span class="si">{PKG}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+<span class="k">class</span> <span class="nc">SimpleConfig</span><span class="p">(</span><span class="n">ConfigModel</span><span class="p">):</span>
+  <span class="n">cleanup</span> <span class="o">=</span> <span class="n">CommandTask</span><span class="p">(</span><span class="s2">&quot;clean&quot;</span><span class="p">,</span> <span class="s2">&quot;/bin/rm -f !</span><span class="si">{PKG}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">chdir</span><span class="o">=</span><span class="s2">&quot;!</span><span class="si">{DEST}</span><span class="s2">&quot;</span><span class="p">,</span>
+                        <span class="n">task_role</span><span class="o">=</span><span class="n">SimpleNamespace</span><span class="o">.</span><span class="n">copy_target</span><span class="p">)</span>
+  <span class="n">copy</span> <span class="o">=</span> <span class="n">CopyFileTask</span><span class="p">(</span><span class="s2">&quot;copy-file&quot;</span><span class="p">,</span> <span class="s2">&quot;!</span><span class="si">{DEST}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">src</span><span class="o">=</span><span class="n">actuator_path</span><span class="p">,</span>
+                      <span class="n">task_role</span><span class="o">=</span><span class="n">SimpleNamespace</span><span class="o">.</span><span class="n">copy_target</span><span class="p">)</span>
+  <span class="c1">#NOTE: this call must be within the config model, not after it!</span>
+  <span class="n">with_dependencies</span><span class="p">(</span> <span class="n">cleanup</span> <span class="o">|</span> <span class="n">copy</span> <span class="p">)</span>
+</pre></div>
+</div>
+<p>Actuator uses some of the notation from
+<a class="reference external" href="http://www.celeryproject.org/">Celery</a> to describe task
+dependencies. The pipe symbol ‘|’ means perform the task on the left
+before the task on the right. This provides Actuator sufficient
+information to determine which task(s) to start with and what follows
+each as they complete. This will now provide repeatable results.</p>
+</div>
+<div class="section" id="dependency-expressions">
+<h3>Dependency expressions<a class="headerlink" href="#dependency-expressions" title="Permalink to this headline">¶</a></h3>
+<p>By using dependency expressions and the with_dependencies() function,
+dependency graphs of arbitrary complexity can be declared. For this next
+section, we’ll assume a config model with 5 tasks in it, t1..t5. The
+following invocations of the with_dependencies() function will yield
+identical dependency graphs, where each task is done in series, and a
+task doesn’t start until the one before it completes.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">with_dependencies</span><span class="p">(</span> <span class="n">t1</span> <span class="o">|</span> <span class="n">t2</span> <span class="o">|</span> <span class="n">t3</span> <span class="o">|</span> <span class="n">t4</span> <span class="o">|</span> <span class="n">t5</span> <span class="p">)</span>
+<span class="c1">#or</span>
+<span class="n">with_dependencies</span><span class="p">(</span> <span class="n">t1</span> <span class="o">|</span> <span class="n">t2</span><span class="p">,</span>
+                   <span class="n">t2</span> <span class="o">|</span> <span class="n">t3</span><span class="p">,</span>
+                   <span class="n">t3</span> <span class="o">|</span> <span class="n">t4</span> <span class="o">|</span> <span class="n">t5</span><span class="p">)</span>
+<span class="c1">#or the following, which is two independent invocations of with_dependencies()</span>
+<span class="n">with_dependencies</span><span class="p">(</span> <span class="n">t1</span> <span class="o">|</span> <span class="n">t2</span> <span class="o">|</span> <span class="n">t3</span> <span class="p">)</span>
+<span class="n">with_dependencies</span><span class="p">(</span> <span class="n">t3</span> <span class="o">|</span> <span class="n">t4</span> <span class="o">|</span> <span class="n">t5</span> <span class="p">)</span>
+<span class="c1">#or various combinations of the above</span>
+</pre></div>
+</div>
+<p>The with_dependencies() function can take any number of dependency
+expressions and be invoked any number of times. It will collect all
+dependency expressions from all the arguments and each invocation and
+assemble a dependency graph that instructs it how to perform the config
+model’s tasks. All tasks that don’t appear an any dependency expression
+are performed immediately.</p>
+<p>The above example illustrates how to arrange tasks in series, but what
+about tasks that can be performed in parallel? To indicate the
+eligibility of tasks to be performed in parallel, use the ‘&amp;’ operator
+in task dependency expressions. Using the same five tasks from above,
+the following would instruct Actuator to perform the identified tasks in
+parallel:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Perform t1 first, then t2 and t3 together, and then t4 and t5 serially</span>
+<span class="n">with_dependencies</span><span class="p">(</span> <span class="n">t1</span> <span class="o">|</span> <span class="p">(</span><span class="n">t2</span> <span class="o">&amp;</span> <span class="n">t3</span><span class="p">)</span> <span class="o">|</span> <span class="n">t4</span> <span class="o">|</span> <span class="n">t5</span> <span class="p">)</span>
+<span class="c1"># the same, but with implicit parallelism</span>
+<span class="n">with_dependencies</span><span class="p">(</span> <span class="n">t1</span> <span class="o">|</span> <span class="n">t2</span><span class="p">,</span> <span class="n">t1</span> <span class="o">|</span> <span class="n">t3</span><span class="p">,</span> <span class="n">t2</span> <span class="o">|</span> <span class="n">t4</span><span class="p">,</span> <span class="n">t3</span> <span class="o">|</span> <span class="n">t4</span><span class="p">,</span> <span class="n">t4</span> <span class="o">|</span> <span class="n">t5</span> <span class="p">)</span>
+
+<span class="c1"># Perform t1 and t2 together, then t3, followed by t4 and t5 together</span>
+<span class="n">with_dependencies</span><span class="p">(</span> <span class="p">(</span><span class="n">t1</span> <span class="o">&amp;</span> <span class="n">t2</span><span class="p">)</span> <span class="o">|</span> <span class="n">t3</span> <span class="o">|</span> <span class="p">(</span><span class="n">t4</span> <span class="o">&amp;</span> <span class="n">t5</span><span class="p">)</span> <span class="p">)</span>
+<span class="c1"># the same, but with multiple expressions</span>
+<span class="n">with_dependencies</span><span class="p">(</span> <span class="p">(</span><span class="n">t1</span> <span class="o">&amp;</span> <span class="n">t2</span><span class="p">)</span> <span class="o">|</span> <span class="n">t3</span><span class="p">,</span> <span class="n">t3</span> <span class="o">|</span> <span class="p">(</span><span class="n">t4</span> <span class="o">&amp;</span> <span class="n">t5</span><span class="p">)</span> <span class="p">)</span>
+<span class="c1"># the same, but with multiple invocations of with_dependencies</span>
+<span class="n">with_dependencies</span><span class="p">(</span> <span class="p">(</span><span class="n">t1</span> <span class="o">&amp;</span> <span class="n">t2</span><span class="p">)</span> <span class="o">|</span> <span class="n">t3</span> <span class="p">)</span>
+<span class="n">with_dependencies</span><span class="p">(</span> <span class="n">t3</span> <span class="o">|</span> <span class="p">(</span><span class="n">t4</span> <span class="o">&amp;</span> <span class="n">t5</span><span class="p">)</span> <span class="p">)</span>
+
+<span class="c1"># Perform t1 then t2 in parallel with t3, all of which can be done</span>
+<span class="c1"># in parallel with t4 then t5</span>
+<span class="n">with_dependencies</span><span class="p">(</span> <span class="p">((</span><span class="n">t1</span> <span class="o">|</span> <span class="n">t2</span><span class="p">)</span> <span class="o">&amp;</span> <span class="n">t3</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">t4</span> <span class="o">|</span> <span class="n">t5</span><span class="p">)</span> <span class="p">)</span>
+
+<span class="c1"># Perform t1..t5 in parallel, but then remember that t1 has to be</span>
+<span class="c1"># done before t4 and add that</span>
+<span class="c1"># dependency in</span>
+<span class="n">with_dependencies</span><span class="p">(</span> <span class="n">t1</span> <span class="o">&amp;</span> <span class="n">t2</span> <span class="o">&amp;</span> <span class="n">t3</span> <span class="o">&amp;</span> <span class="n">t4</span> <span class="o">&amp;</span> <span class="n">t5</span> <span class="p">)</span>
+<span class="n">with_dependencies</span><span class="p">(</span> <span class="n">t1</span> <span class="o">|</span> <span class="n">t4</span> <span class="p">)</span>
+<span class="c1"># the same, but after fixing your original oversight</span>
+<span class="n">with_dependencies</span><span class="p">(</span> <span class="p">(</span><span class="n">t1</span> <span class="o">|</span> <span class="n">t4</span><span class="p">)</span> <span class="o">&amp;</span> <span class="n">t2</span> <span class="o">&amp;</span> <span class="n">t3</span> <span class="o">&amp;</span> <span class="n">t5</span> <span class="p">)</span>
+</pre></div>
+</div>
+<p>As we can see, dependency expressions can be arbitrarily nested, and the
+expressions can be layered on additively to create complex relationships
+that can’t be expressed with a single expression.</p>
+</div>
+<div class="section" id="auto-scaling-tasks">
+<h3>Auto-scaling tasks<a class="headerlink" href="#auto-scaling-tasks" title="Permalink to this headline">¶</a></h3>
+<p>For situations where there are multiple identical hosts that all requre
+the same configuration tasks, Actuator provides a means to identify the
+task to perform on each host and scale the number of tasks actually
+performed depending on how many hosts are in an instance of the model.
+The <em>MultiTask</em> container allows you to wrap another task and associate
+the wrapped task with a reference that names a group of hosts on which
+to perform the task.</p>
+<p>To illustrate how this works, we’ll introduce a new Namespace class that
+has a variable aspect to it:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">GridNamespace</span><span class="p">(</span><span class="n">NamespaceModel</span><span class="p">):</span>
+  <span class="n">grid</span> <span class="o">=</span> <span class="n">MultiRole</span><span class="p">(</span><span class="n">Role</span><span class="p">(</span><span class="s2">&quot;grid-node&quot;</span><span class="p">,</span> <span class="n">host_ref</span><span class="o">=</span><span class="n">SomeInfra</span><span class="o">.</span><span class="n">grid</span><span class="p">[</span><span class="n">ctxt</span><span class="o">.</span><span class="n">name</span><span class="p">]))</span>
+
+
+<span class="k">class</span> <span class="nc">GridConfig</span><span class="p">(</span><span class="n">ConfigModel</span><span class="p">):</span>
+  <span class="n">reset</span> <span class="o">=</span> <span class="n">MultiTask</span><span class="p">(</span><span class="s2">&quot;reset&quot;</span><span class="p">,</span> <span class="n">CommandTask</span><span class="p">(</span><span class="s2">&quot;remove&quot;</span><span class="p">,</span> <span class="s2">&quot;/bin/rm -rf /some/path/*&quot;</span><span class="p">),</span>
+                    <span class="n">GridNamespace</span><span class="o">.</span><span class="n">q</span><span class="o">.</span><span class="n">grid</span><span class="o">.</span><span class="n">all</span><span class="p">())</span>
+  <span class="n">copy</span> <span class="o">=</span> <span class="n">MultiTask</span><span class="p">(</span><span class="s2">&quot;copy&quot;</span><span class="p">,</span> <span class="n">CopyFileTask</span><span class="p">(</span><span class="s2">&quot;copy-tarball&quot;</span><span class="p">,</span> <span class="s1">&#39;/some/path/software.tgz&#39;</span><span class="p">,</span>
+                                        <span class="n">src</span><span class="o">=</span><span class="s1">&#39;/some/local/path/software.tgz&#39;</span><span class="p">),</span>
+                   <span class="n">GridNamespace</span><span class="o">.</span><span class="n">q</span><span class="o">.</span><span class="n">grid</span><span class="o">.</span><span class="n">all</span><span class="p">())</span>
+  <span class="n">with_dependencies</span><span class="p">(</span><span class="n">reset</span> <span class="o">|</span> <span class="n">copy</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>In the above example, the Namespace model has a role container ‘grid’
+that can grow to define an arbitrary number of roles. For each grid
+node, we want to clear out a directory and then transfer a tarball to be
+unpacked in that same directory. To do this flexibly, we wrap the task
+we want to run on a group of roles in a MultiTask, providing a name for
+the MultiTask, a template task to apply to all the roles, and then a
+list of roles to apply the task to, in this case
+GridNamespace.q.grid.all().</p>
+<p>The ‘q’ attribute of GridNamespace is supplied by all Actuator model
+base classes. It signals the start of a <em>reference selection
+expression</em>, which is a logical expression that yields a list of
+references to elements of a model. In this case, the expression will
+make the template task apply to every grid role that is generated in the
+namespace. Reference selection expressions will be covered in more deal
+below.</p>
+<p>For the purposes of setting up dependencies, MultTasks can be treated
+like any other task; that is, they can appear in dependency expressions.
+The dependency system will ensure that all instances of the template
+task complete before the MultiTask itself completes.</p>
+</div>
+<div class="section" id="config-classes-as-tasks">
+<h3>Config classes as tasks<a class="headerlink" href="#config-classes-as-tasks" title="Permalink to this headline">¶</a></h3>
+<p>MultiTasks make it easy to create configuration models that
+automatically scale relative to an instance of a namespace. However,
+MultiTasks may be limiting in some circumstances:</p>
+<ul class="simple">
+<li><p>Since the MultiTask can’t finish until all of its template instances
+finish, overall progress may be slowed due to a single
+slow-completing task instance.</p></li>
+<li><p>Expressing complex dependencies in terms of MultiTask tasks can be
+subject to slow progress, again due to the completion requirement for
+each template instance inside each MultiTask.</p></li>
+</ul>
+<p>What we would like is to be able to express a set of tasks and their
+dependencies, and then have the set of tasks be applied to a single
+host. If we could then wrap up such a representation in a MultiTask, we
+can have different roles proceed through their complex set of config
+tasks at varying rates, allowing better overall progress even if one
+role is processing tasks slowly.</p>
+<p>Fortunately, we already have a mechanism for modeling this situation:
+the config model itself! What is needed is to be able to treat a config
+model as if it were a task. To do that, we use the <em>ConfigClassTask</em>
+wrapper; this wrapper allows a config model to be used as if it was
+task, providing the means to define a set of tasks to be performed on a
+single role, all with their own dependencies.</p>
+<p>To illustrate this, we’ll re-write the above example with a
+ConfigClassTask to wrap up the operations that are all to be carried out
+on a single role:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1">#this is the same namespace model as above</span>
+<span class="k">class</span> <span class="nc">GridNamespace</span><span class="p">(</span><span class="n">NamespaceModel</span><span class="p">):</span>
+  <span class="n">grid</span> <span class="o">=</span> <span class="n">MultiRole</span><span class="p">(</span><span class="n">Role</span><span class="p">(</span><span class="s2">&quot;grid-node&quot;</span><span class="p">,</span> <span class="n">host_ref</span><span class="o">=</span><span class="n">SomeInfra</span><span class="o">.</span><span class="n">grid</span><span class="p">[</span><span class="n">ctxt</span><span class="o">.</span><span class="n">name</span><span class="p">]))</span>
+
+
+<span class="c1">#this config model is new; it defines all the tasks and dependencies for a single role</span>
+<span class="c1">#Notice that there is no mention of a &#39;task_role&#39; within this model</span>
+<span class="k">class</span> <span class="nc">NodeConfig</span><span class="p">(</span><span class="n">ConfigModel</span><span class="p">):</span>
+  <span class="n">reset</span> <span class="o">=</span> <span class="n">CommandTask</span><span class="p">(</span><span class="s2">&quot;remove&quot;</span><span class="p">,</span> <span class="s2">&quot;/bin/rm -rf /some/path/*&quot;</span><span class="p">)</span>
+  <span class="n">copy</span> <span class="o">=</span> <span class="n">CopyFileTask</span><span class="p">(</span><span class="s2">&quot;copy-tarball&quot;</span><span class="p">,</span> <span class="s1">&#39;/some/path/software.tgz&#39;</span><span class="p">,</span>
+                      <span class="n">src</span><span class="o">=</span><span class="s1">&#39;/some/local/path/software.tgz&#39;</span><span class="p">)</span>
+  <span class="n">with_dependencies</span><span class="p">(</span><span class="n">reset</span> <span class="o">|</span> <span class="n">copy</span><span class="p">)</span>
+
+
+<span class="c1">#this model now uses the NodeConfig model in a MultiTask to define all the tasks that need</span>
+<span class="c1">#to be carried out on each role</span>
+<span class="k">class</span> <span class="nc">GridConfig</span><span class="p">(</span><span class="n">ConfigModel</span><span class="p">):</span>
+  <span class="n">setup_nodes</span> <span class="o">=</span> <span class="n">MultiTask</span><span class="p">(</span><span class="s2">&quot;setup-nodes&quot;</span><span class="p">,</span> <span class="n">ConfigClassTask</span><span class="p">(</span><span class="s2">&quot;setup-suite&quot;</span><span class="p">,</span> <span class="n">NodeConfig</span><span class="p">),</span>
+                          <span class="n">GridNamespace</span><span class="o">.</span><span class="n">q</span><span class="o">.</span><span class="n">grid</span><span class="o">.</span><span class="n">all</span><span class="p">())</span>
+</pre></div>
+</div>
+<p>In this example, the ConfigClassTask wrapper makes the NodeConfig model
+appear to be a plain task, and allows the MultiTask wrapper to create as
+many instances of NodeConfig as needed according to the the number of
+items that are returned by the reference selection expression,
+GridNamespace.q.grid.all().</p>
+<p>The big operational difference here is that each “reset | copy”
+pipeline operates in parallel on each role named by
+GridNamespace.q.grid.all(). In the MultiTask example, all <em>resets</em> had
+to complete before the first <em>copy</em> could start on <em>any</em> role, but with
+ConfigClassTask, if one node finishes its <em>reset</em> before another, that
+node’s <em>copy</em> task can start right away. This means that slow nodes
+don’t slow down all work within the MultiTask. The MultiTask still won’t
+complete until all of the ConfigClassTask instances complete, but
+overall progress will be less “lumpy” than if each MultiTask had to wait
+until the slowest task completed.</p>
+<p>Notice that nowhere in the NodeConfig model is a <em>task_role</em>
+identified. This is characteristic of models that are to be wrapped with
+ConfigClassTask– the task_role will be externally supplied, and hence
+no reference is required within the model that is to be wrapped. Here,
+the MultiTask supplies the task_role value from the
+GridNamespace.q.grid.all() expression.</p>
+<p>ConfigClassTask can be used independently of the MultiTask wrapper; it
+is a first-class task that can be expressed within a model and can enter
+into dependency expressions. When used this way, a task_role must be
+supplied to the ConfigClassTask, and this can be done in the normal way
+with the task_role keyword argument.</p>
+</div>
+<div class="section" id="reference-selection-expressions">
+<h3>Reference selection expressions<a class="headerlink" href="#reference-selection-expressions" title="Permalink to this headline">¶</a></h3>
+<p>In the above sections on the MultiTask and ConfigClassTask, the notion
+of referencce selection expressions was introduced. This section will go
+into these expressions in more detail and explain how they can be used
+to select references. Although their primary use is to select namespace
+model role references, these expressions can be used with any model to
+select a set of references for a variety of purposes.</p>
+<p>As mentioned above, a reference selection expression is initiated by
+accessing the ‘q’ attribute on a model class. After the ‘q’, attributes
+of the model and its objects can be accessed just as if you were doing
+so in the model class itself. However, instead of generating a single
+model reference, such accesses further define an expression that will
+yield a list of references into the model.</p>
+<p>Each attribute access in a reference selection expression will yield
+either a single-valued attribute (such as a Role in a NamespaceModel),
+or a collection of values as represented by wrappers such as MultiRole
+or MultiRoleGroup. In this latter case, it is possible to restrict the
+set of references selected through the use of test methods which will
+filter out unwanted references in the collection. In either case, such
+references may be followed by further attribute accesses into the model,
+and attributes will be accessed only on the items selected to this
+point.</p>
+<p>A contrived example will illustrate this; consider the following nested
+namespace model:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">Contrived</span><span class="p">(</span><span class="n">NamespaceModel</span><span class="p">):</span>
+  <span class="n">top</span> <span class="o">=</span> <span class="n">MultiRole</span><span class="p">(</span><span class="n">MultiRoleGroup</span><span class="p">(</span><span class="s2">&quot;site&quot;</span><span class="p">,</span>
+                                  <span class="n">leader</span><span class="o">=</span><span class="n">Role</span><span class="p">(</span><span class="s1">&#39;leader&#39;</span><span class="p">),</span>
+                                  <span class="n">grid</span><span class="o">=</span><span class="n">MultiRole</span><span class="p">(</span><span class="n">Role</span><span class="p">(</span><span class="s1">&#39;grid-node&#39;</span><span class="p">))))</span>
+</pre></div>
+</div>
+<p>Further, suppose we created an instance of this model and populated it
+by generating the references shown:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">con</span> <span class="o">=</span> <span class="n">Contrived</span><span class="p">()</span>
+<span class="k">for</span> <span class="n">city</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;NY&quot;</span><span class="p">,</span> <span class="s2">&quot;LN&quot;</span><span class="p">,</span> <span class="s2">&quot;TK&quot;</span><span class="p">,</span> <span class="s2">&quot;SG&quot;</span><span class="p">,</span> <span class="s2">&quot;HK&quot;</span><span class="p">,</span> <span class="s2">&quot;SF&quot;</span><span class="p">]:</span>
+  <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">20</span><span class="p">):</span>
+    <span class="n">_</span> <span class="o">=</span> <span class="n">con</span><span class="o">.</span><span class="n">top</span><span class="p">[</span><span class="n">city</span><span class="p">]</span><span class="o">.</span><span class="n">grid</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+</pre></div>
+</div>
+<p>We can then construct the following expressions to select lists of role
+references from this model instance:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># list of leader Roles regardless of the instance of top</span>
+<span class="n">Contrived</span><span class="o">.</span><span class="n">q</span><span class="o">.</span><span class="n">top</span><span class="o">.</span><span class="n">all</span><span class="p">()</span><span class="o">.</span><span class="n">leader</span>
+
+<span class="c1"># 1-element list of leader Role for the top[&#39;NY&#39;] instance</span>
+<span class="n">Contrived</span><span class="o">.</span><span class="n">q</span><span class="o">.</span><span class="n">top</span><span class="o">.</span><span class="n">key</span><span class="p">(</span><span class="s2">&quot;NY&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">leader</span>
+
+<span class="c1"># list of all grid Roles under top[&#39;NY&#39;]</span>
+<span class="n">Contrived</span><span class="o">.</span><span class="n">q</span><span class="o">.</span><span class="n">top</span><span class="o">.</span><span class="n">key</span><span class="p">(</span><span class="s2">&quot;NY&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">grid</span><span class="o">.</span><span class="n">all</span><span class="p">()</span>
+
+<span class="c1"># list of all grid Roles under top[&quot;NY&quot;], top[&quot;LN&quot;] and top[&quot;TK&quot;]</span>
+<span class="n">Contrived</span><span class="o">.</span><span class="n">q</span><span class="o">.</span><span class="n">top</span><span class="o">.</span><span class="n">keyin</span><span class="p">([</span><span class="s2">&quot;NY&quot;</span><span class="p">,</span> <span class="s2">&quot;LN&quot;</span><span class="p">,</span> <span class="s2">&quot;TK&quot;</span><span class="p">])</span><span class="o">.</span><span class="n">grid</span><span class="o">.</span><span class="n">all</span><span class="p">()</span>
+
+<span class="c1"># list of all leader Roles who&#39;s top key starts with &#39;S&#39;</span>
+<span class="n">Contrived</span><span class="o">.</span><span class="n">q</span><span class="o">.</span><span class="n">top</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="s2">&quot;S.*&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">leader</span>
+
+<span class="c1"># list of all even numbered grid Roles for top[&quot;HK&quot;]</span>
+<span class="k">def</span> <span class="nf">even_test</span><span class="p">(</span><span class="n">key</span><span class="p">):</span>
+  <span class="k">return</span> <span class="nb">int</span><span class="p">(</span><span class="n">key</span><span class="p">)</span> <span class="o">%</span> <span class="mi">2</span> <span class="o">==</span> <span class="mi">0</span>
+
+<span class="n">Contrived</span><span class="o">.</span><span class="n">q</span><span class="o">.</span><span class="n">top</span><span class="o">.</span><span class="n">key</span><span class="p">(</span><span class="s2">&quot;HK&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">grid</span><span class="o">.</span><span class="n">pred</span><span class="p">(</span><span class="n">even_test</span><span class="p">)</span>
+
+<span class="c1"># list of the leader and all grid Roles for top[&quot;NY&quot;]</span>
+<span class="n">Contrived</span><span class="o">.</span><span class="n">q</span><span class="o">.</span><span class="n">union</span><span class="p">(</span><span class="n">Contrived</span><span class="o">.</span><span class="n">q</span><span class="o">.</span><span class="n">top</span><span class="o">.</span><span class="n">key</span><span class="p">(</span><span class="s2">&quot;NY&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">leader</span><span class="p">,</span>
+                  <span class="n">Contrived</span><span class="o">.</span><span class="n">q</span><span class="o">.</span><span class="n">top</span><span class="o">.</span><span class="n">key</span><span class="p">(</span><span class="s2">&quot;NY&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">grid</span><span class="o">.</span><span class="n">all</span><span class="p">())</span>
+
+<span class="c1"># list of leaders where top key starts with S,</span>
+<span class="c1"># and the key is in &quot;NY&quot;, &quot;LN&quot; (in other words, an empty list)</span>
+<span class="n">Contrived</span><span class="o">.</span><span class="n">top</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="s2">&quot;S.*&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">keyin</span><span class="p">([</span><span class="s2">&quot;NY&quot;</span><span class="p">,</span> <span class="s2">&quot;LN&quot;</span><span class="p">])</span>
+</pre></div>
+</div>
+<p>The following tests are available to select desired references:</p>
+<ul class="simple">
+<li><p><em>all()</em> selects all items; this is actually the implicit action when
+naming an attribute that is a collection of items</p></li>
+<li><p><em>key(string)</em> only selects the items whose key matches the supplied
+string</p></li>
+<li><p><em>keyin(iterable)</em> only selects the items whose keys are in the
+supplied iterable of keys</p></li>
+<li><p><em>match(regex_string)</em> only selects items whose key matches the
+supplied regex string</p></li>
+<li><p><em>no_match(regex_string)</em> only selects items whose key doesn’t match
+the supplied regex string</p></li>
+<li><p><em>pred(callable)</em> only selects items for which the supplied callable
+returns True. The callable is supplied with one argument, the key of
+the item the callable is to determine as to whether it should be
+selected.</p></li>
+</ul>
+</div>
+</div>
+<div class="section" id="orchestration">
+<h2>Orchestration<a class="headerlink" href="#orchestration" title="Permalink to this headline">¶</a></h2>
+<p>Orchestration brings all of the models together and manages their
+processing in order to provision, configure and execute an instance of
+the system being modeled. Orchestration is flexible in that it can only
+do part of the job if that’s requied; for instance, if you only need to
+have infra provisioned you can simply supply the infra model and let the
+orchestrator handle that, or alternatively if you have a namespace
+that’s populated with fixed IP/hostnames for host_ref values for all
+Roles, you can have the orchestrator manage just the configuration tasks
+against the set of hosts in the namespace model. This allows you to use
+the orchestrator in variety of circumstances, such as config model
+development or provisioning of infra for other purposes, as well as
+standing up whole systems.</p>
+<p>The orchestrator is an instance of <code class="docutils literal notranslate"><span class="pre">actuator.ActuatorOrchestration</span></code> to
+handle processing the models. You give it a number of different models
+as keyword arguments as well as a provisioner for the infra model, and
+then ask it to ‘initiate’ the system the models represent.</p>
+<p>To make this clearer, here’s an example of the usage of the
+orchestrator. The example borrows from a more fully developed example in
+the Actuator project, the set of models that describe how to stand up a
+Hadoop cluster (see <a class="reference external" href="src/examples/hadoop">src/examples/hadoop</a> for
+more details). The models include an infra model (HadoopInfra), a
+namespace model (HadoopNamespace), and a config model (HadoopConfig).
+With these models, and some credential information to log into
+Openstack, the orchestrator can be created as follows:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">actuator</span> <span class="kn">import</span> <span class="n">ActuatorOrchestration</span>
+<span class="kn">from</span> <span class="nn">actuator.provisioners.openstack.resource_tasks</span> <span class="kn">import</span> <span class="n">OpenstackProvisioner</span>
+<span class="kn">from</span> <span class="nn">hadoop_models</span> <span class="kn">import</span> <span class="n">HadoopInfra</span><span class="p">,</span> <span class="n">HadoopNamespace</span><span class="p">,</span> <span class="n">HadoopConfig</span>
+
+<span class="c1"># assume you have a correct clouds.yml file and you know the name of</span>
+<span class="c1"># the cloud it it you wish touse, number of slaves (num_slaves) for</span>
+<span class="c1"># your cluster, and the number of worker threads that should be</span>
+<span class="c1"># started for provisioning and config tasks (thread_count)</span>
+
+<span class="n">cname</span> <span class="o">=</span> <span class="s2">&quot;citycloud&quot;</span>
+
+<span class="c1"># make your model instances</span>
+<span class="n">infra</span> <span class="o">=</span> <span class="n">HadoopInfra</span><span class="p">(</span><span class="s2">&quot;hadoop_infra&quot;</span><span class="p">)</span>
+<span class="n">ns</span> <span class="o">=</span> <span class="n">HadoopNamespace</span><span class="p">()</span>
+                   <span class="c1"># replace with remote user</span>
+<span class="n">cfg</span> <span class="o">=</span> <span class="n">HadoopConfig</span><span class="p">(</span><span class="n">remote_user</span><span class="o">=</span><span class="s2">&quot;ubuntu&quot;</span><span class="p">,</span>
+                   <span class="c1">#replace with priv key filename</span>
+                   <span class="n">private_key_file</span><span class="o">=</span><span class="s2">&quot;actuator-dev-key&quot;</span><span class="p">)</span>
+
+<span class="c1"># create the slaves you need</span>
+<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">num_slaves</span><span class="p">):</span>
+  <span class="n">_</span> <span class="o">=</span> <span class="n">ns</span><span class="o">.</span><span class="n">slaves</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+
+<span class="c1"># make your provisioner</span>
+<span class="n">os_prov</span> <span class="o">=</span> <span class="n">OpenstackProvisioner</span><span class="p">(</span><span class="n">cloud_name</span><span class="o">=</span><span class="n">cname</span><span class="p">,</span> <span class="n">num_threads</span><span class="o">=</span><span class="n">thread_count</span><span class="p">)</span>
+
+<span class="c1"># make your orchestrator and run it</span>
+<span class="n">ao</span> <span class="o">=</span> <span class="n">ActuatorOrchestration</span><span class="p">(</span><span class="n">infra_model_inst</span><span class="o">=</span><span class="n">infra</span><span class="p">,</span>
+                           <span class="n">provisioner</span><span class="o">=</span><span class="n">os_prov</span><span class="p">,</span>
+                           <span class="n">namespace_model_inst</span><span class="o">=</span><span class="n">ns</span><span class="p">,</span>
+                           <span class="n">config_model_inst</span><span class="o">=</span><span class="n">cfg</span><span class="p">)</span>
+<span class="n">ao</span><span class="o">.</span><span class="n">initiate_system</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>As orchestration runs, you’ll get a stream of output written to stdout
+by default that informs you of the tasks being performed throughout the
+orchestration run. If <code class="docutils literal notranslate"><span class="pre">initiate_system()</span></code> returns True, then
+orchestration ran successfully. If not, then you’ll receive the abort
+messages and associated stack traces for each failed task.</p>
+<p>Once orchestration completes, the models and the orchestrator can be
+inspected to see the information that was gathered for all operations
+carried out. For example, you can see the IPs of the hosts provisioned
+for the above run by doing the following:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">...done! You can reach the reach the assets at the following IPs:&quot;</span>
+<span class="nb">print</span> <span class="s2">&quot;&gt;&gt;&gt;namenode: </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">infra</span><span class="o">.</span><span class="n">name_node_fip</span><span class="o">.</span><span class="n">get_ip</span><span class="p">()</span>
+<span class="nb">print</span> <span class="s2">&quot;&gt;&gt;&gt;slaves:&quot;</span>
+<span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">infra</span><span class="o">.</span><span class="n">slaves</span><span class="o">.</span><span class="n">values</span><span class="p">():</span>
+    <span class="nb">print</span> <span class="s2">&quot;</span><span class="se">\t</span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">s</span><span class="o">.</span><span class="n">slave_fip</span><span class="o">.</span><span class="n">get_ip</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>This will show you the IPs for the provisioned resouprces. You can also
+inspect the model resources to determine the Openstack IDs for all
+provisioned resources. Likewise, the namespace can be inspected for any
+values determined by provisioning.</p>
+</div>
+</div>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="index.html">Actuator Doc</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="manual/overview.html">Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="manual/key-concepts.html">Key Concepts</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2020, Incisive Technology Ltd..
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 3.0.3</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+      |
+      <a href="_sources/Tutorial.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>
