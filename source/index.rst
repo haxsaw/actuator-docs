@@ -14,6 +14,7 @@ Actuator User Manual and API Reference
    manual/key-concepts
    manual/orch-basic
    manual/infra-basic
+   manual/namespace-basic
 
 
 
