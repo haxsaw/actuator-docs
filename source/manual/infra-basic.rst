@@ -2,6 +2,16 @@
 Infra Model Basics
 ************************
 
+**Import package**: actuator.infra
+    Key names to import: InfraModel
+
+**Import package**: actuator.modeling
+    Key names to import: ctxt
+
+**Import package**: actuator.provisioners.aws.resources
+    Key names to import: VPC, SecurityGroup, KeyPair, SecurityGroupRule, Subnet, InternetGateway, Route, RouteTable,
+    NetworkInterface, PublicIP, AWSInstance
+
 Although the namespace model is the one that is central in an
 Actuator model set, it actually helps to start with the infra model as building an infra model first can yield
 immediate benefits. The infra model describes all the dynamically
@@ -222,5 +232,3 @@ Trying it out
 Using the orchestrator we built in :doc:`orch-basic`, we can create an instance of the server in AWS. If you put the
 above model code into a Python module my_models.py, you can then run the code and see you instance get built on AWS,
 and also have Actuator tear the instance down.
-
-We'll use this final example infra model when having a look at the other models.

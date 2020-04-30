@@ -2,6 +2,18 @@
 Orchestration Basics
 ************************
 
+**Import package**: actuator
+    Key names to import: ActuatorOrchestration
+
+**Import package**: actuator.provisioners.aws
+    Key names to import: AWSProvisionerProxy (to support provisioning AWS infra resources)
+
+**Import package**: actuator.provisioners.azure
+    Key names to import: AzureProvisionerProxy (to support provisioning Azure infra resources)
+
+**Import package**: actuator.provisioners.openstack
+    Key names to import: OpenStackProvisionerProxy (to support provisioning Openstack infra resources)
+
 Although not part of modelling, you can't get Actuator to do any provisioning without an orchestrator (although you can
 do lots of other things with models), so we'll start with going over ochestrator basics so you have something to test
 models with.
