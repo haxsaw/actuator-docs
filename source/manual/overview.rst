@@ -109,6 +109,9 @@ role named in the namespace model. Like with the configuration model,
 dependencies between the executables can be expressed so that a
 particular startup order can be enforced.
 
+.. note::
+    A logically related grouping of an infra, namespace, config, and execute models is called a **model set**.
+
 Actuator then provides a number of support tools that can take instances
 of these models and processes their information, turning it into
 actions in the cloud. So for instance, an orchestrator can take an infra
@@ -134,3 +137,5 @@ Using Actuator generally involves the following steps:
 4. *Create an orchestrator*, providing it the model instances and the proxy.
 5. *Instruct the orchestrator to initiate the system instance* described by the models.
 
+Step 1 is only done once; steps 2-5 are often done in code in order to make an instance of the system being described
+by the models.

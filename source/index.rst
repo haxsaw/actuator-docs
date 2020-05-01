@@ -17,6 +17,7 @@ Actuator User Manual and API Reference
    manual/namespace-basic
    manual/config-basic
    manual/exec-basic
+   manual/advanced/index
 
 
 

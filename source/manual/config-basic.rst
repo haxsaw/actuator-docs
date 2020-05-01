@@ -12,6 +12,9 @@ Config Model Basics
     Key names to import: PingTask, ScriptTask, CommandTask, ShellTask, CopyFileTask, ProcessCopyFileTask,
     LocalCommandTask, LocalShellCommandTask, WaitForTaskTask
 
+To create a config model, you create a subclass of actuator.config.ConfigModel and fill it with tasks and dependencies
+between tasks.
+
 The configuration model is what instructs Actuator as to what to do with the infrastructure in order to make it ready to
 run application software. The configuration model has two main aspects:
 
