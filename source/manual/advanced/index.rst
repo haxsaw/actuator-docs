@@ -7,5 +7,7 @@ Advanced Actuator Usage Techniques
 
    wisdom-for-models
    orch-advanced
+   infra-advanced
+   recipes
 
 

@@ -133,7 +133,7 @@ Thus giving you a way to abbreviate a longer context expression.
     'shortcuts' for common context expression prefixes:
 
     -  *ccomp* is the same as ctxt.comp
-    -  *cparent* and *cpar* are the same as ctxt.parent
+    -  *cparent* and *cpar* and *cont* and *sibling* are the same as ctxt.comp.container
     -  *cmodel* and *cmod* are the same as ctxt.model
     -  *cnexus* and *cnex* are the same as ctxt.nexus
 
