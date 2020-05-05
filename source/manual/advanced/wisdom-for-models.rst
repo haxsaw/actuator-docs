@@ -7,7 +7,7 @@ techniques provide ways of building reusable models, establishing conventions, a
 compact models.
 
 ============================
-More on content expressions
+More on context expressions
 ============================
 
 The infra basics section introduced the notion of context expressions, and the namespace basics section did a brief

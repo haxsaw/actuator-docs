@@ -6,4 +6,6 @@ Advanced Actuator Usage Techniques
    :caption: Contents:
 
    wisdom-for-models
+   orch-advanced
+
 
