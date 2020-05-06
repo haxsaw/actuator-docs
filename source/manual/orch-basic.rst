@@ -26,7 +26,7 @@ host_ref values for all Roles, you can have the orchestrator manage just the con
 hosts in the namespace model. This allows you to use the orchestrator in variety of circumstances, such as config
 model development or provisioning of infra for other purposes, as well as standing up whole systems.
 
-The orchestrator is an instance of the `actuator.ActuatorOrchestration` class. You give it a
+The orchestrator is an instance of the ``actuator.ActuatorOrchestration`` class. You give it a
 number of different models as keyword arguments as well as a list of provisioners for the resources in the infra model,
 and then ask it to 'initiate' the system the models represent.
 
@@ -61,11 +61,11 @@ model named MyInfraModel in the my_models.py module. To keep things simple, erro
     ao.teardown_system()
 
 For the above to work, you'll obviously need an AWS account and credentials that has permission to create resources
-in the region named with `default_region`.
+in the region named with ``default_region``.
 
-The orchestrator method `initiate_system()` blocks until all work specified in the models is complete, and returns
+The orchestrator method ``initiate_system()`` blocks until all work specified in the models is complete, and returns
 True if the orchestration was successful. In the example, the script simply reports the return result of
-`initiate_system()` and then waits for the user to hit <return>, at which point it starts to tear the system back
+``initiate_system()`` and then waits for the user to hit <return>, at which point it starts to tear the system back
 down. If the orchestrator encounters unrecoverable errors, these are logged to standard error as critical log messages
 so the user can see what has gone awry.
 

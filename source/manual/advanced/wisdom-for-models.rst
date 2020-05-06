@@ -25,32 +25,32 @@ consists of:
 -  The component being processed, which can be found in **ctxt.comp**
 -  A gateway to the other models in the model set called the nexus, which can be found in **ctxt.nexus**
 
-Two of these items bear more examination, `ctxt.comp` and `ctxt.nexus`.
+Two of these items bear more examination, ``ctxt.comp`` and ``ctxt.nexus``.
 
 The component container
 -----------------------
 
-As mentioned above `ctxt.comp` is a reference to the component being processed. From here, you can add on any attribute
-implemented by the component, for instance `name`. In fact `ctxt.name` is just short for `ctxt.comp.name`. But more
-importantly, you might be interested in the component that contains the current component, or the component's
-`container`. This can be found with `ctxt.comp.container`. If this is a top-level component in a model, then
-`ctxt.comp.container` is the model instance itself, or `ctxt.model`. However, if this is one of the component grouping
-constructs that is described in the advanced section on Actuator, then `ctxt.comp.container` will be the grouping
+As mentioned above ``ctxt.comp`` is a reference to the component being processed. From here, you can add on any attribute
+implemented by the component, for instance ``name``. In fact ``ctxt.name`` is just short for ``ctxt.comp.name``. But
+more importantly, you might be interested in the component that contains the current component, or the component's
+``container``. This can be found with ``ctxt.comp.container``. If this is a top-level component in a model, then
+``ctxt.comp.container`` is the model instance itself, or ``ctxt.model``. However, if this is one of the component grouping
+constructs that is described in the advanced section on Actuator, then ``ctxt.comp.container`` will be the grouping
 construct. You can then reach sibling components within the container.
 
 The nexus
 ---------
 
 So far, we've only looked at expressions that involve a component and the model the component lives in. But as was
-mentioned earlier, a model can be part of a `model set`, a logically related group of infra, namespace, config, and
+mentioned earlier, a model can be part of a ``model set``, a logically related group of infra, namespace, config, and
 execute models. It often is the case that you need to reach a component in a related model, such as a server in an
 infra model for the host_ref in a Role in a namespace model. So far, we've always used models references to refer to
 components in other models. However, context expressions provide us a way to find all the models in a group via the
-`nexus`. Every model has a nexus, but when a set of models are provided to an orchestrator, they are merged and serve
+``nexus``. Every model has a nexus, but when a set of models are provided to an orchestrator, they are merged and serve
 as a bridge from one model to another. Thus, the nexus is a conduit for accessing other models during orchestration,
 and only serves as an active bridge during this time.
 
-The `ctxt.nexus` expression is a short cut for the nexus beloning to the component's model. There are a few standard
+The ```ctxt.nexus`` expression is a short cut for the nexus beloning to the component's model. There are a few standard
 attributes on the nexus that allow you to reach other models in the model group:
 
 -  **ctxt.nexus.inf** is the infra model in the group
@@ -96,7 +96,7 @@ For example, consider this abbreviated infra and namespace models:
         slave_roles = MultiRole(Role('slave',
                                      host_ref=ctxt.nexus.inf.slaves[ctxt.name]))
 
-In the infra model, we declare `slaves` to be a MultiResource; every new instance of the resource will be an
+In the infra model, we declare ``slaves`` to be a MultiResource; every new instance of the resource will be an
 AWSInstance; this inner resource is called the `template`. Instances of the template are created whenever they
 are referenced, like:
 
@@ -120,7 +120,7 @@ component to drive the name of the associated infra resource. So if instead of t
         _ = ns.slave_roles[i]
 
 We'd not only have five Roles in the slave_roles container, we'd also get five AWSInstances in the slaves container
-of our infra model. The host_ref context expression `ctxt.nexus.inf.slaves[ctxt.name]` is saying:
+of our infra model. The host_ref context expression ``ctxt.nexus.inf.slaves[ctxt.name]`` is saying:
 
 -  Get the nexus for the current component (ctxt.nexus)
 -  Get the infra model in the nexus (ctxt.nexus.inf)

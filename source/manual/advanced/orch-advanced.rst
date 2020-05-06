@@ -27,7 +27,7 @@ do whatever you wish with it, from display it to pass it along to another system
 Usage
 -----
 
-Using a TaskEventHandler is straightforward: you simply provide an instance as the value of the `event_handler`
+Using a TaskEventHandler is straightforward: you simply provide an instance as the value of the ``event_handler=``
 keyword argument when you create an ActuatorOrchestration:
 
 .. code:: python
@@ -40,7 +40,7 @@ keyword argument when you create an ActuatorOrchestration:
 
     ao = ActuatorOrchestration(event_handler=handler, etc)
 
-When you call `initiate_system()` on `ao`, the methods on handler will be invoked as the orchestrator progresses
+When you call ``initiate_system()`` on ``ao``, the methods on handler will be invoked as the orchestrator progresses
 through processing.
 
 Invocation order
@@ -120,8 +120,8 @@ useful guidance about the arguments that are provided to these methods:
     -  Nodes from config and execute models are the Tasks that you actually put into the model, and so can be examined
        directly. These will not be model references to these objects, but the actual Tasks themselves.
     -  Nodes from infra models are not the resources you used in modeling the infra. Instead, these are special Task
-       objects that know how to process the resource. The resource is available within the node via the `rsrc` attribute
-       of such nodes.
+       objects that know how to process the resource. The resource is available within the node via the ``rsrc``
+       attribute of such nodes.
 
 -  **tec**, the TaskExecControl object. When a Task of any kind is executed, a TaskExecControl object governs the Task's
    execution process and state. Thus then task execution-related methods are called on the TaskEventHandler, the
@@ -132,7 +132,7 @@ useful guidance about the arguments that are provided to these methods:
 Tuning Operation
 ================
 
-The following parameters to `ActuatorOrchestration` are fully documented in the API Reference, but these are worthy of
+The following parameters to ``ActuatorOrchestration`` are fully documented in the API Reference, but these are worthy of
 bringing up early to cover their frequent use subtleties of their semantic.
 
 - **service**: this is if you wish to orchestrate an instance of a ServiceModel, which contains its own infra,
@@ -186,13 +186,13 @@ Actuator implements a two-level differentiation system for determining which pro
 This ability allows modelers to specify different proxies to distinguish between different providers using the same
 type of cloud, or different regions for a single provider. If your model requires multiple proxies, simply create them
 before making the ActuatorOrchestration instance, and then hand a list of the proxies as the value of the
-`provisioner_proxies=` keyword argument when creating the ActuatorOrchestration instance.
+``provisioner_proxies=`` keyword argument when creating the ActuatorOrchestration instance.
 
 For example, both CityCloud and Auro are OpenStack cloud implementations, and hence both use the
 OpenStackProvisionerProxy. To be able to provision infra across both of these OpenStack clouds in a single model,
-you'd need two OpenStackProvisionerProxy instances, each given a different value of the `name` parameter and configured
-for each of these OpenStack providers. Then, resources in the infra
-would use the `cloud=` keyword parameter to provide the name of one or the other of the OpenStackProvisionerProxy
+you'd need two OpenStackProvisionerProxy instances, each given a different value of the ```name`` parameter and
+configured for each of these OpenStack providers. Then, resources in the infra
+would use the ``cloud=`` keyword parameter to provide the name of one or the other of the OpenStackProvisionerProxy
 instances, and Actuator uses that name to disambiguate between the two OpenStackProvisionerProxy instances.
 
 In another example, suppose you were only going to deploy on AWS, but you wanted to have resources deployed into
@@ -206,14 +206,15 @@ you need to allow Actuator to select the correct proxy to provision a resource.
 
 .. note::
 
-    You don't need to use the `cloud=` keyword parameter on a resource if there is no ambiguity as to which proxy to
+    You don't need to use the ``cloud=`` keyword parameter on a resource if there is no ambiguity as to which proxy to
     select. For example, if you only are deploying to one AWS region, then you only need a single AWSProvisionerProxy,
     and all the AWS resources will be matched with that proxy even if the model contains resources for other types
     of clouds.
 
 .. note::
 
-    If Actuator can't identify a single proxy to use for a resource, it will raise an error during `initiate_system()`.
+    If Actuator can't identify a single proxy to use for a resource, it will raise an error during
+    ``initiate_system()``.
 
 As an example, suppose we have the following infra fragment where we want two different networks on two different
 OpenStack providers, CityCloud and Auro:
@@ -264,7 +265,7 @@ There are two main use cases for persisting orchestrators:
     successful orchestration in order to re-try the orchestration at a later time. This restriction may be lifted at
     some point, but currently this is not a use Actuator supports.
 
-The basic persistence mechanism is straightforward: simply give an orchestrator to one of the `persist_to` utility
+The basic persistence mechanism is straightforward: simply give an orchestrator to one of the ``persist_to`` utility
 functions and Actuator will create a representation of that object to the indicated storage:
 
 - **persist_to_dict()** returns a dict object containing the persisted orchestrator and models, at which point you can
@@ -273,22 +274,22 @@ functions and Actuator will create a representation of that object to the indica
 - **persist_to_file()** simple uses the dict returned from persist_to_dict() to create a JSON version of the dict and
   write it to the specified file. This provides a very straightforward way to save an orchestrator to a file.
 
-Similarly, `reanimate_from_dict()` and `reanimate_from_file()` yield the orchestrator from a previously created dict
+Similarly, ``reanimate_from_dict()`` and ``reanimate_from_file()`` yield the orchestrator from a previously created dict
 or open file.
 
 There are a few caveats regarding reanimating orchestrators you should be aware of:
 
 -   Orchestrators don't persist their provisioner proxies as these often contain sensitive data like passwords, and
     hence putting them into a persisted form can risk exposing a password. So when reanimating an orchestrator, you
-    use the `set_provisioner_proxies()` method on the orchestrator to provide all the properly configured proxies
+    use the ``set_provisioner_proxies()`` method on the orchestrator to provide all the properly configured proxies
     if you intend to use the orchestrator to tear down a previously initiated system.
 -   Persisting saves sys.path so that the same path can be restored temporarily during reanimation. However, the
     paths noted in the persisted version must actually be available to the process duing reanimation or else
     Actuator may not be able to find proper modules for importing. This applies to reanimating any object, not
     just orchestrators.
--   As mentioned above, reanimated orchestrators can not be used to retry previously failed `initiate_system()`
-    calls currently. Reanimated orchestrators can be used for `teardown_system()` and for general inspection of
-    models, but you can only retry initiate_system() with a model continuously held in memory.
+-   As mentioned above, reanimated orchestrators can not be used to retry previously failed ``initiate_system()``
+    calls currently. Reanimated orchestrators can be used for ``teardown_system()`` and for general inspection of
+    models, but you can only retry ``initiate_system()`` with a model continuously held in memory.
 
 
 

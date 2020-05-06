@@ -89,7 +89,7 @@ Var() class, the first argument being the name of the Var, the second being the 
         in_env=False),
 
 ...which is setting the Var with the name COMP_SERVER_PORT to '8081'. This shows that even if a Var value will be used
-as a number, it must be captured as a string. It also has the final keyword argument `in_env=False`, which will be
+as a number, it must be captured as a string. It also has the final keyword argument ``in_env=False``, which will be
 used by config and exec models to determine if a Var should be part of a task's environment or not. This is
 saying that this variable should not become an environment variable for any task (the default is to include
 a Var in any task environment).
@@ -137,7 +137,7 @@ Finally, we have this Var:
     Var("ROLE_HOME", "!{APP_HOME_DIR}/!{ROLE_NAME}")
 
 ...which defines the Var ROLE_HOME as a string that uses `replacement parameters`. A replacement parameter is a Var
-name enclosed within the delimiter `!{ }`, which tells Actuator to replace the entire string with the value of the
+name enclosed within the delimiter ``!{ }``, which tells Actuator to replace the entire string with the value of the
 Var named inside the delimeter. In this case, ROLE_NAME will be the concatenation of the value of APP_HOME_DIR (when
 it is specified) with that of ROLE_NAME (which will be the value of the Role or namespace model instance evaluating
 the Var). This provides a mechanism to create customised Var values based on other Vars, model reference values, and
@@ -154,8 +154,8 @@ Next, let's consider the Roles that are declared. First we have:
     compute_server = Role("my_compute_server",
                           host_ref=MyInfraModel.server)
 
-...which defines the `compute_server` Role in the model (which has the name 'my_compute_server'). Also note the
-keyword argument `host_ref`, which is set to `MyInfraModel.server`. This tells Actuator that this Role will be
+...which defines the ``compute_server`` Role in the model (which has the name 'my_compute_server'). Also note the
+keyword argument ``host_ref``, which is set to ``MyInfraModel.server``. This tells Actuator that this Role will be
 realised on the 'server' resoruce in MyInfraModel. The value of host_ref may also be a string with an FDQN or
 IP address of the host for the Role, or it may also be a model reference to a so-called StaticServer resource
 in an infra model class (more on those later).
@@ -171,7 +171,7 @@ Next, we declare the app_server Role:
 
 
 Besides a name and host_ref, this Role defines its own Vars. One, "ROLE_NAME", has the same name as a Var defined
-at the global model level with `with_variables()`, and thus overrides the value of that Var with its own hard-coded
+at the global model level with ``with_variables()``, and thus overrides the value of that Var with its own hard-coded
 value of "MyApp". It also adds a new Var, "PRIVATE", which only the app_server component can "see". This is because
 any component's set of visible Vars is the union of the ones more global to it plus the ones that are defined on the
 component directly. In this way, individual Roles can define Vars that only the Role will have visibility of, and Vars
@@ -240,7 +240,7 @@ If we load this into a Python interpreter and start poking around in the class, 
     >>>
 
 When we have a look at non-Actuator attributes in a model class, we see the kind of results we expect. But notice
-when we have a look at the `vpc` or `sn` attributes, we get ModelReference objects. These can be used as arguments
+when we have a look at the ``vpc`` or ``sn`` attributes, we get ModelReference objects. These can be used as arguments
 to other components, as we saw above with host_ref arguments to a Role. They can also be accessed by user-created
 code that accesses the model to pull out interesting information, by using the value() method on the reference
 as shown below:
@@ -254,8 +254,8 @@ as shown below:
     <actuator.provisioners.aws.resources.VPC object at 0x000001E022409E48>
     >>>
 
-The observant reader may have noticed that `MyInfraModel.vpc` results in a ModelReference, but that `infra.vpc`
-results in a ModelInstanceReference when we access `infra.vpc`. These two are slightly different in capability and are
+The observant reader may have noticed that ``MyInfraModel.vpc`` results in a ModelReference, but that ``infra.vpc``
+results in a ModelInstanceReference when we access ``infra.vpc``. These two are slightly different in capability and are
 used in different circumstances:
 
 -  ModelReferences are generated when you access Actuator components through a **model** and are used for modeling
@@ -313,7 +313,7 @@ No contest here: model instance references are the *only way* to fetch data that
 user applications that use Actuator models. Context expressions simply have no capacity to return data from a model--
 they are solely designed to express relationships. Internally, Actuator turns context expressions into model references
 so that the data being referred to can be acquired. And in fact, user manipulation of model classes automatically
-yields model references on which `value()` is invoked to acquire the unlying data behind the reference. So for
+yields model references on which ``value()`` is invoked to acquire the unlying data behind the reference. So for
 activity beyond modeling that involves using Actuator model data, expect to be working with model references.
 
 A good rule of thumb to follow is: use context expressions consistently for modeling unless you have reason not to,

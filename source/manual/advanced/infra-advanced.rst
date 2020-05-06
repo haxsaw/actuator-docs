@@ -26,7 +26,7 @@ Resource Groups
 ======================
 
 Sometimes, you have a set of resources that are always used together. This may be boilerplate for standard
-configurations, or groups of resources that you always want to have created in sets. The `ResourceGroup` component
+configurations, or groups of resources that you always want to have created in sets. The ``ResourceGroup`` component
 allows you to create such groupings, and depending where they are created they may be re-used in various contexts.
 
 As a first example, here is a ResourceGroup outside of an infra model that gathers the various resources needed
@@ -52,7 +52,7 @@ on OpenStack to create a network with a path to the external internet:
                                                  ctxt.comp.container.router,
                                                  ctxt.comp.container.subnet))
 
-Note the context expressions used in the resources in the group; they are prefixed with `ctxt.comp.container`. This
+Note the context expressions used in the resources in the group; they are prefixed with ``ctxt.comp.container``. This
 provides a reference to the ResourceGroup itself, and is how you create references to sibling resources. If this feels
 a bit ponderous, you could assign the prefix to a descriptive name like `sibling` and then use that in the creation
 of the group like so:
@@ -90,8 +90,8 @@ of the group like so:
     described in :doc:`../infra-basic`.
 
 When the ResourceGroup is created, it automatically 'grows' attributes for the names of each provided keyword argument,
-and thus in the above example, `ec.net` is a Network resource, `ec.subnet` a Subnet, and so forth. Suppose now that this
-definition was in a module named `boilerplate.py`; it could then be used in an infra model as follows:
+and thus in the above example, ``ec.net`` is a Network resource, ``ec.subnet`` a Subnet, and so forth. Suppose now that
+this definition was in a module named `boilerplate.py`; it could then be used in an infra model as follows:
 
 .. code:: python
 
@@ -104,14 +104,14 @@ definition was in a module named `boilerplate.py`; it could then be used in an i
         external = ec
 
 The ResourceGroup's resources can subsequently used in the model via context expressions such as
-`ctxt.model.extenal.net` or `ctxt.model.external.router`.
+``ctxt.model.extenal.net`` or ``ctxt.model.external.router``.
 
 Factoring out boilerplate is one key use of resource groups; another is to group together resources that should be
 provisioned together in dynamic contexts. We'll see this usage a bit later in this doc.
 
-==============
-MultiResources
-==============
+====================================
+MultiResource and MultiResourceGroup
+====================================
 
 MultiResources provide a way to model a resource that can create multiple copies of a template resource simply by
 supplying the MultiResource a unique key for the new copy. This is how Actuator allows the modeling of systems
@@ -141,7 +141,7 @@ VPC instances as we give keys to the MultiResource:
 
 The act of supplying a unique key to a MultiResource object creates a new instance of the template resource. Any
 resource can be a template, include another MultiResource or a ResourceGroup. In fact, this latter is common a usage
-a combination class is provided, the `MultiResourceGroup`, which let's a group of resources be created in one go when
+a combination class is provided, the ``MultiResourceGroup``, which let's a group of resources be created in one go when
 a new key is provided.
 
 Here is a more complex example for AWS. It defines a set of 'slave' servers that can be used for some computation
@@ -151,9 +151,8 @@ Here is a more complex example for AWS. It defines a set of 'slave' servers that
 
     from actuator import ctxt
     from actuator.infra import InfraModel, MultiResourceGroup
-    from actuator.provisioners.aws.resources import (VPC, Subnet, InternetGateway,
-                                                     RouteTable, Route, NetworkInterface,
-                                                     AWSInstance)
+    from actuator.provisioners.aws.resources import *
+
     class ComplexMRInfra(InfraModel):
         # assume some standard network boilerplate that creates:
         # a Subnet 'sn',
@@ -172,7 +171,7 @@ Here is a more complex example for AWS. It defines a set of 'slave' servers that
                                     )
 
 Notice how the resources in the MultiResourceGroup refer to each other with context expressions prefixed with
-`ctxt.comp.container` (as noted above in the discussion of create a 'sibling' context expression).
+``ctxt.comp.container`` (as noted above in the discussion of create a 'sibling' context expression).
 This expression allows you to access sibling resources in the same container. They can also
 make reference to resources outside of model, such as the 'sg' SecurtyGroup.
 
@@ -195,7 +194,7 @@ Options
 ===================
 
 You can invoke an option setting function within an infra model that tunes the behaviour of how the model is processed.
-The `with_infra_options()` function recognised the following options:
+The ``with_infra_options()`` function recognised the following options:
 
 -   **long_names**: boolean, defaults to False. Normally, the name used for component as recorded on the cloud system
     is just the name given the component in the model. However, there there are lots of instances of a system in a
@@ -203,7 +202,7 @@ The `with_infra_options()` function recognised the following options:
     then the cloud is informed that the name for the resource is the name of the model, followed by the names of
     all resources that lead to the resource, and ending with the resource name. This yields a suitable unique name.
 
-Using `with_infra_options()` is straightforward; you just call it somewhere inside your infra model:
+Using ``with_infra_options()`` is straightforward; you just call it somewhere inside your infra model:
 
 .. code:: python
 
@@ -212,4 +211,4 @@ Using `with_infra_options()` is straightforward; you just call it somewhere insi
         with_infra_options(long_names=True)
         # then the rest of the model's content.
 
-While `with_infra_options()` can be called anywhere in the model, it is generally most useful put it at the top.
+While ``with_infra_options()`` can be called anywhere in the model, it is generally most useful put it at the top.

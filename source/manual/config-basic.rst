@@ -52,7 +52,7 @@ IP to use specified as the value of the associated Var at run time.
 .. note::
     Actuator uses `Paramiko <https://pypi.python.org/pypi/paramiko>`__ for managing the remote execution of commands
     over SSH. With Paramiko, you can either supply a user name/password to the config, or else a user name and a private
-    key file. If the latter is chosen, be sure that the machine referred to by `host_ref` has a SSH server running
+    key file. If the latter is chosen, be sure that the machine referred to by ``host_ref`` has a SSH server running
     as well as the key files installed for the remote user. Clouds often provide a 'key pair' resource that can be
     used for this purpose.
 
@@ -74,7 +74,7 @@ another that will copy the files to the target.
         copy = CopyFileTask("copy-file", "!{DEST}", src="!{FILE_TO_COPY}",
                           task_role=SimpleNamespace.copy_target)
 
-The CommandTask is saying to change to the directory identified by the `chdir=` keyword argument, and then to run
+The CommandTask is saying to change to the directory identified by the ``chdir=`` keyword argument, and then to run
 indicated command. The CopyFileTask is saying to copy a file to the specified destination directory; the copy should
 the same name as the original.
 
@@ -152,7 +152,7 @@ model, we would get the following:
 
         with_dependencies(cleanup | copy)
 
-The `with_dependencies()` function can be called repeatedly to define dependencies (that is, execution order) between
+The ``with_dependencies()`` function can be called repeatedly to define dependencies (that is, execution order) between
 tasks. In the above snippet, the '|' character indicates serial execution, and says that the cleanup task must
 complete before the copy task is started. With this additional information, Actuator can now produce repeatable
 results.

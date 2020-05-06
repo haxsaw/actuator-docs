@@ -7,7 +7,7 @@ Actuator User Manual and API Reference
 ==================================================
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 3
    :caption: Contents:
 
    manual/overview

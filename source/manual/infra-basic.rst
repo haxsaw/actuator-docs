@@ -79,7 +79,7 @@ in the Infra Models section under More Advanced Uses. But for now, we'll conside
 The basic networking setup involves the creation of VPC, Subnet, InternetGateway, RouteTable, and Route resources
 in the model. The order of creation of these resources isn't important, as Actuator will sort out what depends on
 what. The important aspect to notice is that in creating some of the resources, there are arguments that start
-with `ctxt.`. These are `context expressions,` and are used to express the relationships between resources in a
+with ``ctxt.``. These are `context expressions`, and are used to express the relationships between resources in a
 number of different circumstances, in this case in an unfinished model. This is an important enough topic to
 warrant a short digression on context expressions in some detail.
 
@@ -87,7 +87,7 @@ warrant a short digression on context expressions in some detail.
 Context Expressions Primer
 ==========================
 
-In Actuator, an expression that begins `ctxt.` signals the start of a `context expression`. Context expressions are
+In Actuator, an expression that begins ``ctxt.`` signals the start of a `context expression`. Context expressions are
 very powerful tools for creating linkages between components in a loosely-coupled way. They essentially describe a
 navigation path though a set of objects such as resources, tasks, or roles, and when actually evaluated they have
 some knowledge of the location or `context` in which they are evaluated.
@@ -106,15 +106,15 @@ parts of a model or a related model in a decoupled way. This is because the cont
 component processing, and the context it's bound to allows this evaluation to yield a specific value.
 
 For example, in the above infra model, the creation of the Subnet resource involves naming the VPC that the
-subnet should be attached to, which is indicated with the context expression `ctxt.model.vpc`. When the Subnet
+subnet should be attached to, which is indicated with the context expression ``ctxt.model.vpc``. When the Subnet
 resource is processed by Actuator during orchestration, the context is set up as follows:
 
-- `ctxt.model` is the instance of MyInfraModel being processed
-- `ctxt.comp` is the Subnet resource (component) itself
-- `ctxt.name` is the name of the Subnet resource, in this case "base subnet"
-- `ctxt.nexus` is the gateway to the other models in the model group (namespace, config, etc)
+- ``ctxt.model`` is the instance of MyInfraModel being processed
+- ``ctxt.comp`` is the Subnet resource (component) itself
+- ``ctxt.name`` is the name of the Subnet resource, in this case "base subnet"
+- ``ctxt.nexus`` is the gateway to the other models in the model group (namespace, config, etc)
 
-So when the Subnet resource is processed, the context expression `ctxt.model.vpc` is evaluated, and this results in
+So when the Subnet resource is processed, the context expression ``ctxt.model.vpc`` is evaluated, and this results in
 accessing the model instance's vpc attribute in that instance, which is requried in order to create an AWS Subnet.
 
 Context expressions can be assigned to variables and then further used to create new context expressions. This is handy
