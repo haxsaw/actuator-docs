@@ -9,6 +9,7 @@ Advanced Actuator Usage Techniques
    orch-advanced
    infra-advanced
    namespace-advanced
+   config-advanced
    recipes
 
 
