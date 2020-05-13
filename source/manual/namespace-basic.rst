@@ -266,6 +266,19 @@ used in different circumstances:
 ModelInstanceReferencs can be generated from a corresponding ModelReference via an instance of a model, but this is all
 rather advanced usage and will be covered in more detail in the advanced sections of the doc.
 
+The ``key``
+-----------
+
+Model references have a useful property named ``key``. The value of this attribute is the value of the attribute or key
+that leads to a modeled object. For example, if the model reference is something like ``MyModel.wibble``, then
+``MyModel.wibble.key`` will be ``wibble``. If you used one of the multi-component structuring components (covered in
+the advanced section), such as ``MyModel.grids[2]``, then ``MyModel.grids[2].key`` will be ``2``.
+
+This may not seem
+terribly useful when creating references, but when using context expressions you don't always know the value of the
+``key`` that led you to a particular item, and so it can be very handy to be able to look this up on the fly. We'll
+see more sophisticated uses of ``key`` in the advanced sections of this manual.
+
 =======================================
 Model References vs Context Expressions
 =======================================

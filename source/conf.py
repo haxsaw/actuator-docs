@@ -17,8 +17,8 @@
 
 # -- Project information -----------------------------------------------------
 
-project = 'Actuator Doc'
-copyright = '2020, Incisive Technology Ltd.'
+project = 'Actuator'
+copyright = '2020, Incisive Technology Ltd'
 author = 'Tom Carroll'
 
 

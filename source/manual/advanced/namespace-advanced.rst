@@ -90,6 +90,96 @@ slave_roles to create. This hides the details, slim though they are, for creatin
     is associated with the namespace model instance. Typcially, this is handled by the orchestrator and you don't need
     to do anything there, but can be done manually. This is covered in a later section.
 
+===================
+RoleGroup
+===================
+
+There are occasions where you might want to model a group of Roles together (this often happens if you have a group
+of machines that might be represent an instance of a regional concentration of infrastructure). To support this,
+similar to the ``ResourceGroup`` of infra models, namespace models support the ``RoleGroup``. These work similarly:
+you give the overall group a name, and use keyword arguments to name the individual Roles in the group. These can
+be any kind of Role, such as a MultiRole or another RoleGroup.
+
+Below is an example that is meant to reflect a collection of Roles that an application wants to use together:
+
+.. code:: python
+
+    from actuator.namespace import NamespaceModel, Role, RoleGroup
+    from actuator import ctxt
+
+    # we'll ignore the infra model here, but assume we have one
+    # that has some kind of single master host as well as
+    # a set of slaves
+
+    class RGNamespace(NamespaceModel):
+        rg = RoleGroup('master-slaves',
+                       master=Role('master', host_ref=ctxt.nexus.inf.master),
+                       slaves=MultiRole(Role('slave',
+                                             host_ref=ctxt.nexus.inf.slaves[ctxt.name])))
+
+Here we've modeled a namespace that has a ``RoleGroup`` that has a single ``master`` role and an arbitrary number
+of ``slave`` roles. ``RoleGroups`` grow attributes that are the names of the supplied keyword arguments for all the
+other Role modeling components; we'd make instance just like we did with ``MultiRole``:
+
+.. code:: python
+
+    ns = RGNamespace('rg-example')
+    ns.rg.slaves[0]  # a new slave Role with key '0'
+    ns.rg.slaves['LN']  # a new slave Role with key 'LN'
+
+==============
+MultiRoleGroup
+==============
+
+Again, analogous to the infra model's ``MultiResourceGroup``, Actuator namespace models can also use the
+``MultiRoleGroup``. This is a shortcut for simply wrapping a ``RoleGroup`` inside a ``MultiRole``. Such constructs
+are useful for modeling a consistent set of Roles that might get deployed across multiple regions.
+
+As an illustration, we'll repeat the above ``RoleGroup`` example as a ``MultiRoleGroup`` to show how we can define
+a set of Roles that are easily replicated. This model has some complex context expressions, so what we'll do is add
+an infra model that only uses ``StaticServers`` to illustrate how to make connections between the role structure
+and the infra structure.
+
+.. code:: python
+
+    from actuator import ctxt
+    from actuator.infra import StaticServer, InfraModel, MultiResourceGroup, MultiResource
+    from actuator.namespace import NamespaceModel, Role, MultiRoleGroup, MultiRole
+
+    class GridInfra(InfraModel):
+        grids = MultiResourceGroup('grids',
+                                   master=StaticServer('master', "192.168.1.1"),
+                                   slaves=MultiResource(StaticServer('slave', "192.168.1.2"))
+
+    class GridNS(NamespaceModel):
+        grid_roles = MultiRoleGroup('grid',
+                                    master=Role('master',
+                                                host_ref=ctxt.nexus.inf.grids[ctxt.comp.container.key].master),
+                                    slaves=MultiRole(Role('slave',
+                                                          host_ref=ctxt.nexus.inf.grids[ctxt.comp.container.container.key].slaves[ctxt.name])))
+
+This namespace model is saying that we have multiple groups of Roles, each of which has a single ``master`` Role and
+zero or more ``slaves`` Roles. For the master Role, the associated ``host_ref=`` context expression is
+``ctxt.nexus.inf.grid[ctxt.comp.container.key].master``; broken down, this means:
+
+-   **ctxt.nexus.inf.grid** is a reference to the ``grids`` ``MultiResourceGroup`` in the associated infra model.
+-   **[ctxt.comp.container.key]** provides a key to ``grids``; in this case, it's saying to find the container of the
+    current component and use the ``key`` that names the container (this will be either an attribute or an actual
+    key). This names a specific ``ResourceGroup`` in the infra model.
+-   **.master** means use the ``master`` resource from the identified ResourceGroup.
+
+For the ``slaves`` ``MultiRole``, the context expression is a bit more complex:
+``ctxt.nexus.inf.grids[ctxt.comp.container.container.key].slaves[ctxt.name]``; broken down, this means:
+
+-   **ctxt.nexus.inf.grid** is a reference to the ``grids`` ``MultiResourceGroup`` in the associated infra model.
+-   **[ctxt.comp.container.container.key]** provides a key to ``grids``; in this case, it's saying to find the
+    container's container, and use that key that identifies the specific container. The first ``container`` is the
+    ``MultiRole`` that holes the Role component, the second ``container`` is specific the ``RoleGroup`` that the
+    ``MultiRole`` is from. It is the ``key`` of this outer container that we wish to use to index into ``grids``.
+-   **.slaves[ctxt.name]** refers to the the ``slaves`` ``MultiResource``; ``ctxt.name`` uses the name of the current
+    component to create a key into the ``MultiResource``.
+
+
 ===========================
 More on namespace structure
 ===========================
