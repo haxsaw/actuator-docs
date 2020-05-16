@@ -18,6 +18,7 @@ Actuator User Manual and API Reference
    manual/config-basic
    manual/exec-basic
    manual/advanced/index
+   api-ref/index
 
 
 
