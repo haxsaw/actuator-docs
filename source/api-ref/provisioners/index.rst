@@ -8,3 +8,4 @@ Actuator Provisioners API Reference
 
     aws/package
     aws/resources
+    azure/package
