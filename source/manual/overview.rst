@@ -102,7 +102,7 @@ are all performed in the proper order. Configuration models can also be
 treated as tasks and used within other configuration models.
 
 Execution Model
-~~~~~~~~~~~~~~~
+---------------
 
 The execution model, or *exec model*, defines the actual processes to run for each system
 role named in the namespace model. Like with the configuration model,

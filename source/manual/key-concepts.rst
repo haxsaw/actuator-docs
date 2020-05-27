@@ -45,7 +45,7 @@ to determine which components depend on each other, which tells Actuator in what
 Context Expression
 ====================
 
-Model references have two limitations: thsy must be made against a specific model class, and they always refer to thw
+Model references have two limitations: they must be made against a specific model class, and they always refer to the
 same logical place in a model. However, circumstances sometimes dictate that a reference needs to be able to vary based
 on the component holding the reference, or that the model may not be known when a component is defined. This situations
 are handled by context expressions. A *context expression* is a special kind of reference involving the magic *ctxt*
