@@ -7,13 +7,18 @@ Actuator User Manual and API Reference
 ==================================================
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 3
    :caption: Contents:
 
    manual/overview
    manual/key-concepts
    manual/orch-basic
    manual/infra-basic
+   manual/namespace-basic
+   manual/config-basic
+   manual/exec-basic
+   manual/advanced/index
+   api-ref/index
 
 
 

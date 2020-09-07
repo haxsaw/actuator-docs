@@ -4,7 +4,7 @@
 <html>
   <head>
     <meta charset="utf-8" />
-    <title>Overview &#8212; Actuator Doc  documentation</title>
+    <title>Overview &#8212; Actuator  documentation</title>
     <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
     <script id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
@@ -23,9 +23,80 @@
   <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
 
   </head><body>
-  
+  <div class="document">
+    
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<p class="logo">
+  <a href="../index.html">
+    <img class="logo" src="../_static/logo.jpg" alt="Logo"/>
+    
+    <h1 class="logo logo-name">Actuator</h1>
+    
+  </a>
+</p>
 
-    <div class="document">
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Overview</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#intro">Intro</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#the-four-models">The Four Models</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#infrastructure-model">Infrastructure Model</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#namespace-model">Namespace Model</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#configuration-model">Configuration Model</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#execution-model">Execution Model</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#basic-operational-flow">Basic Operational Flow</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="key-concepts.html">Key Concepts</a></li>
+<li class="toctree-l1"><a class="reference internal" href="orch-basic.html">Orchestration Basics</a></li>
+<li class="toctree-l1"><a class="reference internal" href="infra-basic.html">Infra Model Basics</a></li>
+<li class="toctree-l1"><a class="reference internal" href="namespace-basic.html">Namespace Model Basics</a></li>
+<li class="toctree-l1"><a class="reference internal" href="config-basic.html">Config Model Basics</a></li>
+<li class="toctree-l1"><a class="reference internal" href="exec-basic.html">Execute Model Basics</a></li>
+<li class="toctree-l1"><a class="reference internal" href="advanced/index.html">Advanced Actuator Usage Techniques</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../api-ref/index.html">Actuator API Reference</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../index.html">Documentation overview</a><ul>
+      <li>Previous: <a href="../index.html" title="previous chapter">Actuator User Manual and API Reference</a></li>
+      <li>Next: <a href="key-concepts.html" title="next chapter">Key Concepts</a></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
       <div class="documentwrapper">
         <div class="bodywrapper">
           
@@ -121,12 +192,17 @@ infrastructure is involved in the configuration tasks. The configuration
 model also captures task dependencies so that the configuration tasks
 are all performed in the proper order. Configuration models can also be
 treated as tasks and used within other configuration models.</p>
+</div>
 <div class="section" id="execution-model">
-<h4>Execution Model<a class="headerlink" href="#execution-model" title="Permalink to this headline">¶</a></h4>
+<h3>Execution Model<a class="headerlink" href="#execution-model" title="Permalink to this headline">¶</a></h3>
 <p>The execution model, or <em>exec model</em>, defines the actual processes to run for each system
 role named in the namespace model. Like with the configuration model,
 dependencies between the executables can be expressed so that a
 particular startup order can be enforced.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>A logically related grouping of an infra, namespace, config, and execute models is called a <strong>model set</strong>.</p>
+</div>
 <p>Actuator then provides a number of support tools that can take instances
 of these models and processes their information, turning it into
 actions in the cloud. So for instance, an orchestrator can take an infra
@@ -134,7 +210,6 @@ model instance and manage the process of provisioning the infra it
 describes, and another can marry that instance with a namespace to fully
 populate a namespace model instance so that the configurator can carry
 out configuration tasks, and so on.</p>
-</div>
 </div>
 </div>
 <div class="section" id="basic-operational-flow">
@@ -152,6 +227,8 @@ manner you would for instance creation.</p></li>
 <li><p><em>Create an orchestrator</em>, providing it the model instances and the proxy.</p></li>
 <li><p><em>Instruct the orchestrator to initiate the system instance</em> described by the models.</p></li>
 </ol>
+<p>Step 1 is only done once; steps 2-5 are often done in code in order to make an instance of the system being described
+by the models.</p>
 </div>
 </div>
 
@@ -160,65 +237,13 @@ manner you would for instance creation.</p></li>
           
         </div>
       </div>
-      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
-        <div class="sphinxsidebarwrapper">
-<h1 class="logo"><a href="../index.html">Actuator Doc</a></h1>
-
-
-
-
-
-
-
-
-<h3>Navigation</h3>
-<p class="caption"><span class="caption-text">Contents:</span></p>
-<ul class="current">
-<li class="toctree-l1 current"><a class="current reference internal" href="#">Overview</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="#intro">Intro</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#the-four-models">The Four Models</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#basic-operational-flow">Basic Operational Flow</a></li>
-</ul>
-</li>
-<li class="toctree-l1"><a class="reference internal" href="key-concepts.html">Key Concepts</a></li>
-</ul>
-
-<div class="relations">
-<h3>Related Topics</h3>
-<ul>
-  <li><a href="../index.html">Documentation overview</a><ul>
-      <li>Previous: <a href="../index.html" title="previous chapter">Actuator User Manual and API Reference</a></li>
-      <li>Next: <a href="key-concepts.html" title="next chapter">Key Concepts</a></li>
-  </ul></li>
-</ul>
-</div>
-<div id="searchbox" style="display: none" role="search">
-  <h3 id="searchlabel">Quick search</h3>
-    <div class="searchformwrapper">
-    <form class="search" action="../search.html" method="get">
-      <input type="text" name="q" aria-labelledby="searchlabel" />
-      <input type="submit" value="Go" />
-    </form>
-    </div>
-</div>
-<script>$('#searchbox').show(0);</script>
-
-
-
-
-
-
-
-
-        </div>
-      </div>
-      <div class="clearer"></div>
-    </div>
+    <div class="clearer"></div>
+  </div>
     <div class="footer">
-      &copy;2020, Incisive Technology Ltd..
+      &copy;2020, Incisive Technology Ltd.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 3.0.3</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 3.0.4</a>
       &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
       
       |

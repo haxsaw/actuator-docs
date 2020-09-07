@@ -12,7 +12,7 @@ Infra Model Basics
     Key names to import: VPC, SecurityGroup, KeyPair, SecurityGroupRule, Subnet, InternetGateway, Route, RouteTable,
     NetworkInterface, PublicIP, AWSInstance
 
-Although the nameghspace model is the one that is central in an
+Although the namespace model is the one that is central in an
 Actuator model set, it actually helps to start with the infra model as building an infra model first can yield
 immediate benefits. The infra model describes all the dynamically
 provisionable and static infra resources for a system and describes how they relate to each

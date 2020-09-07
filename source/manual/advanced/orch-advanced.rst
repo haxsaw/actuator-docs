@@ -261,7 +261,7 @@ There are two main use cases for persisting orchestrators:
 
 .. note::
 
-    Currently, one use case Actuator persistencce does not support is the persistence and reanimation of a partially
+    Currently, one use case Actuator persistence does not support is the persistence and reanimation of a partially
     successful orchestration in order to re-try the orchestration at a later time. This restriction may be lifted at
     some point, but currently this is not a use Actuator supports.
 

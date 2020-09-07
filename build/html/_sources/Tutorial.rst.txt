@@ -1268,24 +1268,21 @@ configuration tasks on the proper system roles in the proper order.
 Declaring tasks
 ~~~~~~~~~~~~~~~
 
-Tasks must be declared relative to a Namespace and its Roles; it is the
-roles that inform the config model where the tasks are to ultimately be
-run. In the following examples, we'll use the this simple namespace that
-sets up a target role where some files are to be copied, as well as a
-couple of Vars that dictate where the files will go.
+Tasks must be declared relative to a Namespace and its Roles; it is the roles that inform the config model where the
+tasks are to ultimately be run. In the following examples, we'll use the this simple namespace that sets up a target
+role where some files are to be copied, as well as a couple of Vars that dictate where the files will go.
 
 .. code:: python
 
     class SimpleNamespace(NamespaceModel):
       with_variables(Var("DEST", "/tmp"),
-                     Var("PKG", "actuator"),
+                     Var("FILE_TO_COPY", "someFile.txt"),
                      Var("CMD_TARGET", "127.0.0.1"))
       copy_target = Role("copy_target", host_ref="!{CMD_TARGET}")
     ns = SimpleNamespace()
 
-We've established several Vars at the model level, one which includes a
-hard-coded IP to use for commands, in this case 'localhost', and a
-single role that will be the target of the files we want to copy.
+We've established several Vars at the model level, one which includes a hard-coded IP to use for commands, in this
+case 'localhost', and a single role that will be the target of the files we want to copy.
 *NOTE*: Actuator uses
 `Paramiko <https://pypi.python.org/pypi/paramiko>`__ under the covers
 for managing the execution of commands over ssh, and hence for this

@@ -4,7 +4,7 @@
 <html>
   <head>
     <meta charset="utf-8" />
-    <title>Infra Model Basics &#8212; Actuator Doc  documentation</title>
+    <title>Infra Model Basics &#8212; Actuator  documentation</title>
     <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
     <script id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
@@ -14,6 +14,7 @@
     <script src="../_static/language_data.js"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Namespace Model Basics" href="namespace-basic.html" />
     <link rel="prev" title="Orchestration Basics" href="orch-basic.html" />
    
   <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
@@ -22,9 +23,75 @@
   <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
 
   </head><body>
-  
+  <div class="document">
+    
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<p class="logo">
+  <a href="../index.html">
+    <img class="logo" src="../_static/logo.jpg" alt="Logo"/>
+    
+    <h1 class="logo logo-name">Actuator</h1>
+    
+  </a>
+</p>
 
-    <div class="document">
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="overview.html">Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="key-concepts.html">Key Concepts</a></li>
+<li class="toctree-l1"><a class="reference internal" href="orch-basic.html">Orchestration Basics</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Infra Model Basics</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#a-basic-aws-infra-model">A Basic AWS Infra Model</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#context-expressions-primer">Context Expressions Primer</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#building-on-the-model">Building on the Model</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#trying-it-out">Trying it out</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="namespace-basic.html">Namespace Model Basics</a></li>
+<li class="toctree-l1"><a class="reference internal" href="config-basic.html">Config Model Basics</a></li>
+<li class="toctree-l1"><a class="reference internal" href="exec-basic.html">Execute Model Basics</a></li>
+<li class="toctree-l1"><a class="reference internal" href="advanced/index.html">Advanced Actuator Usage Techniques</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../api-ref/index.html">Actuator API Reference</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../index.html">Documentation overview</a><ul>
+      <li>Previous: <a href="orch-basic.html" title="previous chapter">Orchestration Basics</a></li>
+      <li>Next: <a href="namespace-basic.html" title="next chapter">Namespace Model Basics</a></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
       <div class="documentwrapper">
         <div class="bodywrapper">
           
@@ -33,6 +100,15 @@
             
   <div class="section" id="infra-model-basics">
 <h1>Infra Model Basics<a class="headerlink" href="#infra-model-basics" title="Permalink to this headline">¶</a></h1>
+<dl class="simple">
+<dt><strong>Import package</strong>: actuator.infra</dt><dd><p>Key names to import: InfraModel</p>
+</dd>
+<dt><strong>Import package</strong>: actuator.modeling</dt><dd><p>Key names to import: ctxt</p>
+</dd>
+<dt><strong>Import package</strong>: actuator.provisioners.aws.resources</dt><dd><p>Key names to import: VPC, SecurityGroup, KeyPair, SecurityGroupRule, Subnet, InternetGateway, Route, RouteTable,
+NetworkInterface, PublicIP, AWSInstance</p>
+</dd>
+</dl>
 <p>Although the namespace model is the one that is central in an
 Actuator model set, it actually helps to start with the infra model as building an infra model first can yield
 immediate benefits. The infra model describes all the dynamically
@@ -42,6 +118,8 @@ be repeated an arbitrary number of times, allowing them to be nested in
 very complex configurations.</p>
 <div class="section" id="a-basic-aws-infra-model">
 <h2>A Basic AWS Infra Model<a class="headerlink" href="#a-basic-aws-infra-model" title="Permalink to this headline">¶</a></h2>
+<p>In Actuator, an infra model is created by defining a subclass of actuator.infra.InfraModel and declaring its
+components.</p>
 <p>The following shows the basic pieces needed to create a single-server infra model on EC2 using a virtual private
 cloud on AWS. We’re going to start by ignoring providing a way to access the instance just to make the base code
 simpler:</p>
@@ -77,9 +155,8 @@ simpler:</p>
                           <span class="n">ctxt</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">sn</span><span class="p">,</span>
                           <span class="n">description</span><span class="o">=</span><span class="s2">&quot;something pithy&quot;</span><span class="p">)</span>
     <span class="n">server</span> <span class="o">=</span> <span class="n">AWSInstance</span><span class="p">(</span><span class="s2">&quot;server&quot;</span><span class="p">,</span>
-                         <span class="s2">&quot;ami-09393cef16d65b519&quot;</span><span class="p">,</span>
+                         <span class="s2">&quot;ami-09393cef16d65b519&quot;</span><span class="p">,</span>  <span class="c1"># or whatever image you choose</span>
                          <span class="n">instance_type</span><span class="o">=</span><span class="s1">&#39;t3.nano&#39;</span><span class="p">,</span>
-                         <span class="n">key_pair</span><span class="o">=</span><span class="n">ctxt</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">kp</span><span class="p">,</span>
                          <span class="n">network_interfaces</span><span class="o">=</span><span class="p">[</span><span class="n">ctxt</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">ni</span><span class="p">])</span>
     <span class="n">server_fip</span> <span class="o">=</span> <span class="n">PublicIP</span><span class="p">(</span><span class="s2">&quot;server_fip&quot;</span><span class="p">,</span>
                           <span class="n">domain</span><span class="o">=</span><span class="s2">&quot;vpc&quot;</span><span class="p">,</span>
@@ -91,14 +168,14 @@ server from the public internet. Actuator provides tools to hide these details i
 in the Infra Models section under More Advanced Uses. But for now, we’ll consider the details.</p>
 <p>The basic networking setup involves the creation of VPC, Subnet, InternetGateway, RouteTable, and Route resources
 in the model. The order of creation of these resources isn’t important, as Actuator will sort out what depends on
-what. The important aspect
-to notice is that in creating some of the resources, there are arguments that start with <cite>ctxt.</cite>. These are <cite>context
-expressions,</cite> and are used to express the relationships between resources in a number of different circumstances,
-in this case in an unfinished model. This is an important enough topic to warrant a short digression on context
-expressions in some detail.</p>
+what. The important aspect to notice is that in creating some of the resources, there are arguments that start
+with <code class="docutils literal notranslate"><span class="pre">ctxt.</span></code>. These are <cite>context expressions</cite>, and are used to express the relationships between resources in a
+number of different circumstances, in this case in an unfinished model. This is an important enough topic to
+warrant a short digression on context expressions in some detail.</p>
+</div>
 <div class="section" id="context-expressions-primer">
-<h3>Context Expressions Primer<a class="headerlink" href="#context-expressions-primer" title="Permalink to this headline">¶</a></h3>
-<p>In Actuator, an expression that begins <cite>ctxt.</cite> signals the start of a <cite>context expression</cite>. Context expressions are
+<h2>Context Expressions Primer<a class="headerlink" href="#context-expressions-primer" title="Permalink to this headline">¶</a></h2>
+<p>In Actuator, an expression that begins <code class="docutils literal notranslate"><span class="pre">ctxt.</span></code> signals the start of a <cite>context expression</cite>. Context expressions are
 very powerful tools for creating linkages between components in a loosely-coupled way. They essentially describe a
 navigation path though a set of objects such as resources, tasks, or roles, and when actually evaluated they have
 some knowledge of the location or <cite>context</cite> in which they are evaluated.</p>
@@ -111,17 +188,52 @@ component), a processing context is created. The <em>context</em> wraps up:</p>
 <li><p>the other models that this model is related to,</p></li>
 <li><p>and other advanced information.</p></li>
 </ul>
-<p>The context expression is bound to this context when a component is processed, and it provides as way to access other
-parts of a model or a related model in a decoupled way.</p>
+<p>The context expression is bound to this context when a component is processed, and it provides a way to access other
+parts of a model or a related model in a decoupled way. This is because the context expression is only evaluated during
+component processing, and the context it’s bound to allows this evaluation to yield a specific value.</p>
 <p>For example, in the above infra model, the creation of the Subnet resource involves naming the VPC that the
-subnet should be attached to, which is indicated with the context expression <cite>ctxt.model.vpc</cite>. When the Subnet
+subnet should be attached to, which is indicated with the context expression <code class="docutils literal notranslate"><span class="pre">ctxt.model.vpc</span></code>. When the Subnet
 resource is processed by Actuator during orchestration, the context is set up as follows:</p>
 <ul class="simple">
-<li><p><cite>ctxt.model</cite> is the instance of MyInfraModel being processed</p></li>
-<li><p><cite>ctxt.comp</cite> is the Subnet resource (component) itself</p></li>
-<li><p><cite>ctxt.name</cite> is the name of the Subnet resource, in this case “base subnet”</p></li>
-<li><p><cite>ctxt.nexus</cite> is the gateway to the other models in the model group (namespace, config, etc)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">ctxt.model</span></code> is the instance of MyInfraModel being processed</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">ctxt.comp</span></code> is the Subnet resource (component) itself</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">ctxt.name</span></code> is the name of the Subnet resource, in this case “base subnet”</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">ctxt.nexus</span></code> is the gateway to the other models in the model group (namespace, config, etc)</p></li>
 </ul>
+<p>So when the Subnet resource is processed, the context expression <code class="docutils literal notranslate"><span class="pre">ctxt.model.vpc</span></code> is evaluated, and this results in
+accessing the model instance’s vpc attribute in that instance, which is requried in order to create an AWS Subnet.</p>
+<p>Context expressions can be assigned to variables and then further used to create new context expressions. This is handy
+if a construction begins to get a bit long and unwieldy. For example you could put in your code:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">cmod</span> <span class="o">=</span> <span class="n">ctxt</span><span class="o">.</span><span class="n">model</span>
+<span class="c1"># and then later refer to the VPC in the above model as:</span>
+<span class="n">cmod</span><span class="o">.</span><span class="n">vpc</span>
+</pre></div>
+</div>
+<p>Thus giving you a way to abbreviate a longer context expression.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>In the actuator.modeling module, where ctxt is defined, Actuator also defines a short list of standard
+‘shortcuts’ for common context expression prefixes:</p>
+<ul class="simple">
+<li><p><em>ccomp</em> is the same as ctxt.comp</p></li>
+<li><p><em>cparent</em> and <em>cpar</em> and <em>cont</em> and <em>sibling</em> are the same as ctxt.comp.container</p></li>
+<li><p><em>cmodel</em> and <em>cmod</em> are the same as ctxt.model</p></li>
+<li><p><em>cnexus</em> and <em>cnex</em> are the same as ctxt.nexus</p></li>
+</ul>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Whenever a model instance is created, new instances of all the components are created as well. Otherwise different
+model instances would share the same component, resulting in colliding uses of the component.</p>
+</div>
+<p>With a context expression, you can navigate around a model, access its components, and even provide access to specific
+component values. Context expressions have a lot of other capabilities, which will be introduced later in the doc.</p>
+</div>
+<div class="section" id="building-on-the-model">
+<h2>Building on the Model<a class="headerlink" href="#building-on-the-model" title="Permalink to this headline">¶</a></h2>
+<p>So the the big problem with the above example is that it doesn’t provide any way to actually connect to the server.
+Although it has a public IP, no keys have been installed, and there are no security groups set up to allow remote
+access from anywhere. Let’s update the example with further declarations that cover these aspects.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">actuator</span> <span class="kn">import</span> <span class="n">ctxt</span>
 <span class="kn">from</span> <span class="nn">actuator.infra</span> <span class="kn">import</span> <span class="n">InfraModel</span>
 <span class="kn">from</span> <span class="nn">actuator.provisioners.aws.resources</span> <span class="kn">import</span> <span class="o">*</span>
@@ -130,6 +242,7 @@ resource is processed by Actuator during orchestration, the context is set up as
     <span class="c1"># make the virtual private cloud</span>
     <span class="n">vpc</span> <span class="o">=</span> <span class="n">VPC</span><span class="p">(</span><span class="s2">&quot;base-vpc&quot;</span><span class="p">,</span>
               <span class="s2">&quot;192.168.1.0/24&quot;</span><span class="p">)</span>
+    <span class="c1"># make a security group and rules that allow &#39;pings&#39; and ssh</span>
     <span class="n">base_sg</span> <span class="o">=</span> <span class="n">SecurityGroup</span><span class="p">(</span><span class="s2">&quot;base-sg&quot;</span><span class="p">,</span>
                             <span class="s2">&quot;a common sg to build on&quot;</span><span class="p">,</span>
                             <span class="n">ctxt</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">vpc</span><span class="p">)</span>
@@ -144,8 +257,10 @@ resource is processed by Actuator during orchestration, the context is set up as
                                  <span class="n">ctxt</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">base_sg</span><span class="p">,</span>
                                  <span class="s2">&quot;ingress&quot;</span><span class="p">,</span>
                                  <span class="s2">&quot;0.0.0.0/0&quot;</span><span class="p">,</span>
-                                 <span class="mi">22</span><span class="p">,</span> <span class="mi">22</span><span class="p">,</span>
+                                 <span class="mi">22</span><span class="p">,</span>
+                                 <span class="mi">22</span><span class="p">,</span>
                                  <span class="s2">&quot;tcp&quot;</span><span class="p">)</span>
+    <span class="c1"># make the other network resources</span>
     <span class="n">sn</span> <span class="o">=</span> <span class="n">Subnet</span><span class="p">(</span><span class="s2">&quot;base subnet&quot;</span><span class="p">,</span>
                 <span class="s2">&quot;192.168.1.0/24&quot;</span><span class="p">,</span>
                 <span class="n">ctxt</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">vpc</span><span class="p">)</span>
@@ -159,23 +274,45 @@ resource is processed by Actuator during orchestration, the context is set up as
               <span class="n">dest_cidr_block</span><span class="o">=</span><span class="s2">&quot;0.0.0.0/0&quot;</span><span class="p">,</span>
               <span class="n">gateway</span><span class="o">=</span><span class="n">ctxt</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">igw</span><span class="p">)</span>
 
-    <span class="c1"># the above was largely boilerplate for networking; the following gets us our specific</span>
-    <span class="c1"># server and gives it a floating public IP where we can reach it</span>
+    <span class="c1"># the above was largely boilerplate for networking; the following gets</span>
+    <span class="c1"># us our specific server and gives it a floating public IP where we</span>
+    <span class="c1"># can reach it. first, make a keypair that can be installed on the</span>
+    <span class="c1"># server instance</span>
+    <span class="n">kp</span> <span class="o">=</span> <span class="n">KeyPair</span><span class="p">(</span><span class="s2">&quot;wibble&quot;</span><span class="p">,</span> <span class="n">public_key_file</span><span class="o">=</span><span class="s2">&quot;actuator-dev-key.pub&quot;</span><span class="p">)</span>
     <span class="n">ni</span> <span class="o">=</span> <span class="n">NetworkInterface</span><span class="p">(</span><span class="s2">&quot;server-ni&quot;</span><span class="p">,</span>
                           <span class="n">ctxt</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">sn</span><span class="p">,</span>
                           <span class="n">description</span><span class="o">=</span><span class="s2">&quot;something pithy&quot;</span><span class="p">,</span>
-                          <span class="n">sec_groups</span><span class="o">=</span><span class="p">[</span><span class="n">ctxt</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">base_sg</span><span class="p">])</span>
+                          <span class="n">sec_groups</span><span class="o">=</span><span class="p">[</span><span class="n">ctxt</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">base_sg</span><span class="p">])</span>  <span class="c1"># add the security group to the interface</span>
     <span class="n">server</span> <span class="o">=</span> <span class="n">AWSInstance</span><span class="p">(</span><span class="s2">&quot;server&quot;</span><span class="p">,</span>
-                         <span class="s2">&quot;ami-09393cef16d65b519&quot;</span><span class="p">,</span>
+                         <span class="s2">&quot;ami-09393cef16d65b519&quot;</span><span class="p">,</span>  <span class="c1"># or whatever image you choose</span>
                          <span class="n">instance_type</span><span class="o">=</span><span class="s1">&#39;t3.nano&#39;</span><span class="p">,</span>
-                         <span class="n">key_pair</span><span class="o">=</span><span class="n">ctxt</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">kp</span><span class="p">,</span>
+                         <span class="n">key_pair</span><span class="o">=</span><span class="n">ctxt</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">kp</span><span class="p">,</span>   <span class="c1"># install the keypair here</span>
                          <span class="n">network_interfaces</span><span class="o">=</span><span class="p">[</span><span class="n">ctxt</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">ni</span><span class="p">])</span>
     <span class="n">server_fip</span> <span class="o">=</span> <span class="n">PublicIP</span><span class="p">(</span><span class="s2">&quot;server_fip&quot;</span><span class="p">,</span>
                           <span class="n">domain</span><span class="o">=</span><span class="s2">&quot;vpc&quot;</span><span class="p">,</span>
                           <span class="n">network_interface</span><span class="o">=</span><span class="n">ctxt</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">ni</span><span class="p">)</span>
 </pre></div>
 </div>
+<p>The above version of the model added KeyPair (kp), SecurityGroup (base_sg) and SecurityGroupRule (ssh_rule,
+ping_rule) components to the model.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>The public part of the key-pair specified in the KeyPair component’s creation was made with ssh-keygen. Actuator
+comes with keypair you can use for experimentation, actuator-dev-key(.pub), but your own keypair should be
+generated for development and production uses. Keypairs should not have a password to use; Actuator currently
+doesn’t support password protected keys.</p>
 </div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>On Linux, Actuator currently requires ssh access via either password or keypair in order for config models to
+put content on hosts. So a security group rule that allows ssh from a known location is required.</p>
+</div>
+</div>
+<div class="section" id="trying-it-out">
+<h2>Trying it out<a class="headerlink" href="#trying-it-out" title="Permalink to this headline">¶</a></h2>
+<p>Using the orchestrator we built in <a class="reference internal" href="orch-basic.html"><span class="doc">Orchestration Basics</span></a>, we can create an instance of the server in AWS. If you put the
+above model code into a Python module my_models.py, you can then run the code and see you instance get built on AWS,
+and also have Actuator tear the instance down.</p>
 </div>
 </div>
 
@@ -184,64 +321,13 @@ resource is processed by Actuator during orchestration, the context is set up as
           
         </div>
       </div>
-      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
-        <div class="sphinxsidebarwrapper">
-<h1 class="logo"><a href="../index.html">Actuator Doc</a></h1>
-
-
-
-
-
-
-
-
-<h3>Navigation</h3>
-<p class="caption"><span class="caption-text">Contents:</span></p>
-<ul class="current">
-<li class="toctree-l1"><a class="reference internal" href="overview.html">Overview</a></li>
-<li class="toctree-l1"><a class="reference internal" href="key-concepts.html">Key Concepts</a></li>
-<li class="toctree-l1"><a class="reference internal" href="orch-basic.html">Orchestration Basics</a></li>
-<li class="toctree-l1 current"><a class="current reference internal" href="#">Infra Model Basics</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="#a-basic-aws-infra-model">A Basic AWS Infra Model</a></li>
-</ul>
-</li>
-</ul>
-
-<div class="relations">
-<h3>Related Topics</h3>
-<ul>
-  <li><a href="../index.html">Documentation overview</a><ul>
-      <li>Previous: <a href="orch-basic.html" title="previous chapter">Orchestration Basics</a></li>
-  </ul></li>
-</ul>
-</div>
-<div id="searchbox" style="display: none" role="search">
-  <h3 id="searchlabel">Quick search</h3>
-    <div class="searchformwrapper">
-    <form class="search" action="../search.html" method="get">
-      <input type="text" name="q" aria-labelledby="searchlabel" />
-      <input type="submit" value="Go" />
-    </form>
-    </div>
-</div>
-<script>$('#searchbox').show(0);</script>
-
-
-
-
-
-
-
-
-        </div>
-      </div>
-      <div class="clearer"></div>
-    </div>
+    <div class="clearer"></div>
+  </div>
     <div class="footer">
-      &copy;2020, Incisive Technology Ltd..
+      &copy;2020, Incisive Technology Ltd.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 3.0.3</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 3.0.4</a>
       &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
       
       |

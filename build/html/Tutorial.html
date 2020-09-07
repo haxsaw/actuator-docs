@@ -4,7 +4,7 @@
 <html>
   <head>
     <meta charset="utf-8" />
-    <title>Actuator Tutorial &#8212; Actuator Doc  documentation</title>
+    <title>Actuator Tutorial &#8212; Actuator  documentation</title>
     <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <script id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
@@ -21,9 +21,67 @@
   <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
 
   </head><body>
-  
+  <div class="document">
+    
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<p class="logo">
+  <a href="index.html">
+    <img class="logo" src="_static/logo.jpg" alt="Logo"/>
+    
+    <h1 class="logo logo-name">Actuator</h1>
+    
+  </a>
+</p>
 
-    <div class="document">
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="manual/overview.html">Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="manual/key-concepts.html">Key Concepts</a></li>
+<li class="toctree-l1"><a class="reference internal" href="manual/orch-basic.html">Orchestration Basics</a></li>
+<li class="toctree-l1"><a class="reference internal" href="manual/infra-basic.html">Infra Model Basics</a></li>
+<li class="toctree-l1"><a class="reference internal" href="manual/namespace-basic.html">Namespace Model Basics</a></li>
+<li class="toctree-l1"><a class="reference internal" href="manual/config-basic.html">Config Model Basics</a></li>
+<li class="toctree-l1"><a class="reference internal" href="manual/exec-basic.html">Execute Model Basics</a></li>
+<li class="toctree-l1"><a class="reference internal" href="manual/advanced/index.html">Advanced Actuator Usage Techniques</a></li>
+<li class="toctree-l1"><a class="reference internal" href="api-ref/index.html">Actuator API Reference</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
       <div class="documentwrapper">
         <div class="bodywrapper">
           
@@ -1182,22 +1240,19 @@ the order of performance</p></li>
 configuration tasks on the proper system roles in the proper order.</p>
 <div class="section" id="declaring-tasks">
 <h3>Declaring tasks<a class="headerlink" href="#declaring-tasks" title="Permalink to this headline">¶</a></h3>
-<p>Tasks must be declared relative to a Namespace and its Roles; it is the
-roles that inform the config model where the tasks are to ultimately be
-run. In the following examples, we’ll use the this simple namespace that
-sets up a target role where some files are to be copied, as well as a
-couple of Vars that dictate where the files will go.</p>
+<p>Tasks must be declared relative to a Namespace and its Roles; it is the roles that inform the config model where the
+tasks are to ultimately be run. In the following examples, we’ll use the this simple namespace that sets up a target
+role where some files are to be copied, as well as a couple of Vars that dictate where the files will go.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">SimpleNamespace</span><span class="p">(</span><span class="n">NamespaceModel</span><span class="p">):</span>
   <span class="n">with_variables</span><span class="p">(</span><span class="n">Var</span><span class="p">(</span><span class="s2">&quot;DEST&quot;</span><span class="p">,</span> <span class="s2">&quot;/tmp&quot;</span><span class="p">),</span>
-                 <span class="n">Var</span><span class="p">(</span><span class="s2">&quot;PKG&quot;</span><span class="p">,</span> <span class="s2">&quot;actuator&quot;</span><span class="p">),</span>
+                 <span class="n">Var</span><span class="p">(</span><span class="s2">&quot;FILE_TO_COPY&quot;</span><span class="p">,</span> <span class="s2">&quot;someFile.txt&quot;</span><span class="p">),</span>
                  <span class="n">Var</span><span class="p">(</span><span class="s2">&quot;CMD_TARGET&quot;</span><span class="p">,</span> <span class="s2">&quot;127.0.0.1&quot;</span><span class="p">))</span>
   <span class="n">copy_target</span> <span class="o">=</span> <span class="n">Role</span><span class="p">(</span><span class="s2">&quot;copy_target&quot;</span><span class="p">,</span> <span class="n">host_ref</span><span class="o">=</span><span class="s2">&quot;!</span><span class="si">{CMD_TARGET}</span><span class="s2">&quot;</span><span class="p">)</span>
 <span class="n">ns</span> <span class="o">=</span> <span class="n">SimpleNamespace</span><span class="p">()</span>
 </pre></div>
 </div>
-<p>We’ve established several Vars at the model level, one which includes a
-hard-coded IP to use for commands, in this case ‘localhost’, and a
-single role that will be the target of the files we want to copy.
+<p>We’ve established several Vars at the model level, one which includes a hard-coded IP to use for commands, in this
+case ‘localhost’, and a single role that will be the target of the files we want to copy.
 <em>NOTE</em>: Actuator uses
 <a class="reference external" href="https://pypi.python.org/pypi/paramiko">Paramiko</a> under the covers
 for managing the execution of commands over ssh, and hence for this
@@ -1640,58 +1695,13 @@ values determined by provisioning.</p>
           
         </div>
       </div>
-      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
-        <div class="sphinxsidebarwrapper">
-<h1 class="logo"><a href="index.html">Actuator Doc</a></h1>
-
-
-
-
-
-
-
-
-<h3>Navigation</h3>
-<p class="caption"><span class="caption-text">Contents:</span></p>
-<ul>
-<li class="toctree-l1"><a class="reference internal" href="manual/overview.html">Overview</a></li>
-<li class="toctree-l1"><a class="reference internal" href="manual/key-concepts.html">Key Concepts</a></li>
-</ul>
-
-<div class="relations">
-<h3>Related Topics</h3>
-<ul>
-  <li><a href="index.html">Documentation overview</a><ul>
-  </ul></li>
-</ul>
-</div>
-<div id="searchbox" style="display: none" role="search">
-  <h3 id="searchlabel">Quick search</h3>
-    <div class="searchformwrapper">
-    <form class="search" action="search.html" method="get">
-      <input type="text" name="q" aria-labelledby="searchlabel" />
-      <input type="submit" value="Go" />
-    </form>
-    </div>
-</div>
-<script>$('#searchbox').show(0);</script>
-
-
-
-
-
-
-
-
-        </div>
-      </div>
-      <div class="clearer"></div>
-    </div>
+    <div class="clearer"></div>
+  </div>
     <div class="footer">
-      &copy;2020, Incisive Technology Ltd..
+      &copy;2020, Incisive Technology Ltd.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 3.0.3</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 3.0.4</a>
       &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
       
       |

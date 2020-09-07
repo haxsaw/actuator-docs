@@ -19,13 +19,13 @@ Advanced Infra Modeling
 
 We've only gone over the basics of infra models so far-- how to declare them, add resources, and make instances. In
 this section we'll look at some higher-level modeling constructs that allow for more concise usage, the creation of
-reusable components, dynamic resource content, and options available when creating models.
+reusable components, dynamic resource declarations, and options available when creating models.
 
 ======================
 Resource Groups
 ======================
 
-Sometimes, you have a set of resources that are always used together. This may be boilerplate for standard
+Sometimes you have a set of resources that are always used together. This may be boilerplate for standard
 configurations, or groups of resources that you always want to have created in sets. The ``ResourceGroup`` component
 allows you to create such groupings, and depending where they are created they may be re-used in various contexts.
 
@@ -104,16 +104,16 @@ this definition was in a module named `boilerplate.py`; it could then be used in
         external = ec
 
 The ResourceGroup's resources can subsequently used in the model via context expressions such as
-``ctxt.model.extenal.net`` or ``ctxt.model.external.router``.
+``ctxt.model.external.net`` or ``ctxt.model.external.router``.
 
 Factoring out boilerplate is one key use of resource groups; another is to group together resources that should be
-provisioned together in dynamic contexts. We'll see this usage a bit later in this doc.
+provisioned together in dynamic contexts. We'll see this usage a bit later in this section.
 
 ====================================
 MultiResource and MultiResourceGroup
 ====================================
 
-MultiResources provide a way to model a resource that can create multiple copies of a template resource simply by
+MultiResource components provide a way to model a resource that can create multiple copies of a template resource simply by
 supplying the MultiResource a unique key for the new copy. This is how Actuator allows the modeling of systems
 with a variable number of components from instantiation to instantiation.
 
@@ -140,7 +140,7 @@ VPC instances as we give keys to the MultiResource:
     infra.vpcs['London']  # this creates a new VPC named 'vpc_London'
 
 The act of supplying a unique key to a MultiResource object creates a new instance of the template resource. Any
-resource can be a template, include another MultiResource or a ResourceGroup. In fact, this latter is common a usage
+resource can be a template, include another MultiResource or a ResourceGroup. In fact, this latter usage is so common
 a combination class is provided, the ``MultiResourceGroup``, which let's a group of resources be created in one go when
 a new key is provided.
 

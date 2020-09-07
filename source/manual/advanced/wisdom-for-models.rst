@@ -21,7 +21,10 @@ processing. This context bundles up certain information and makes it available d
 consists of:
 
 -  The model the component is part of, which can be found in **ctxt.model**
--  The name of the component being processed, which can be found in **ctxt.name**
+-  The name of the component being processed, which can be found in
+   **ctxt.name** (**NOTE**: this is not the value of the ``name`` argument to
+   the component, but rather the name of the attribute in the model that
+   holds the ref to the component)
 -  The component being processed, which can be found in **ctxt.comp**
 -  A gateway to the other models in the model set called the nexus, which can be found in **ctxt.nexus**
 
@@ -48,9 +51,9 @@ infra model for the host_ref in a Role in a namespace model. So far, we've alway
 components in other models. However, context expressions provide us a way to find all the models in a group via the
 ``nexus``. Every model has a nexus, but when a set of models are provided to an orchestrator, they are merged and serve
 as a bridge from one model to another. Thus, the nexus is a conduit for accessing other models during orchestration,
-and only serves as an active bridge during this time.
+and serves as an active bridge during this time.
 
-The ```ctxt.nexus`` expression is a short cut for the nexus beloning to the component's model. There are a few standard
+The ``ctxt.nexus`` expression is a short cut for the nexus belonging to the component's model. There are a few standard
 attributes on the nexus that allow you to reach other models in the model group:
 
 -  **ctxt.nexus.inf** is the infra model in the group
@@ -59,7 +62,7 @@ attributes on the nexus that allow you to reach other models in the model group:
 -  **ctxt.nexus.exe** is the execute model in the group
 
 Using the nexus to create cross-model references allows models to be more loosely coupled as they don't need to use
-a model reference involving a specific model. To see how this works, consider the following simple infra with two
+a model reference involving a specific model class. To see how this works, consider the following simple infra with two
 static servers (a static server is an already-existing server, not a cloud based one that must be provisioned), and a
 namespace that uses them:
 
@@ -109,13 +112,13 @@ are referenced, like:
 This results in 5 new AWSInstance resources with names like 'slave-0'..'slave-4'. However, we want to be able to
 access these from the Roles in our namespace. We do that by creating a MultiRole, which behaves like the
 MultiResource, with one key difference: the host_ref involves a context expression that uses the name of the current
-component to drive the name of the associated infra resource. So if instead of the above for loop, we wrote:
+namespace Role component to drive the name of the associated infra resource. So if instead of the above for loop, we wrote:
 
 .. code:: python
 
     infra = Multi('multi-infra')
     ns = NSMulti('multi-ns')
-    ns.set_infra_model(infra)  # joins each model's nexus
+    ns.set_infra_model(infra)  # joins each model via a nexus
     for i in range(5):
         _ = ns.slave_roles[i]
 

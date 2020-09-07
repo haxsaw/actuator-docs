@@ -4,7 +4,7 @@
 <html>
   <head>
     <meta charset="utf-8" />
-    <title>Actuator User Manual and API Reference &#8212; Actuator Doc  documentation</title>
+    <title>Actuator User Manual and API Reference &#8212; Actuator  documentation</title>
     <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <script id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
@@ -22,60 +22,18 @@
   <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
 
   </head><body>
-  
-
-    <div class="document">
-      <div class="documentwrapper">
-        <div class="bodywrapper">
-          
-
-          <div class="body" role="main">
-            
-  <div class="section" id="actuator-user-manual-and-api-reference">
-<h1>Actuator User Manual and API Reference<a class="headerlink" href="#actuator-user-manual-and-api-reference" title="Permalink to this headline">¶</a></h1>
-<div class="toctree-wrapper compound">
-<p class="caption"><span class="caption-text">Contents:</span></p>
-<ul>
-<li class="toctree-l1"><a class="reference internal" href="manual/overview.html">Overview</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="manual/overview.html#intro">Intro</a></li>
-<li class="toctree-l2"><a class="reference internal" href="manual/overview.html#the-four-models">The Four Models</a></li>
-<li class="toctree-l2"><a class="reference internal" href="manual/overview.html#basic-operational-flow">Basic Operational Flow</a></li>
-</ul>
-</li>
-<li class="toctree-l1"><a class="reference internal" href="manual/key-concepts.html">Key Concepts</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="manual/key-concepts.html#model">Model</a></li>
-<li class="toctree-l2"><a class="reference internal" href="manual/key-concepts.html#component">Component</a></li>
-<li class="toctree-l2"><a class="reference internal" href="manual/key-concepts.html#model-reference">Model Reference</a></li>
-<li class="toctree-l2"><a class="reference internal" href="manual/key-concepts.html#context-expression">Context Expression</a></li>
-<li class="toctree-l2"><a class="reference internal" href="manual/key-concepts.html#orchestrator">Orchestrator</a></li>
-<li class="toctree-l2"><a class="reference internal" href="manual/key-concepts.html#proxy">Proxy</a></li>
-</ul>
-</li>
-<li class="toctree-l1"><a class="reference internal" href="manual/orch-basic.html">Orchestration Basics</a></li>
-<li class="toctree-l1"><a class="reference internal" href="manual/infra-basic.html">Infra Model Basics</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="manual/infra-basic.html#a-basic-aws-infra-model">A Basic AWS Infra Model</a></li>
-</ul>
-</li>
-</ul>
-</div>
-</div>
-<div class="section" id="indices-and-tables">
-<h1>Indices and tables<a class="headerlink" href="#indices-and-tables" title="Permalink to this headline">¶</a></h1>
-<ul class="simple">
-<li><p><a class="reference internal" href="genindex.html"><span class="std std-ref">Index</span></a></p></li>
-<li><p><a class="reference internal" href="py-modindex.html"><span class="std std-ref">Module Index</span></a></p></li>
-<li><p><a class="reference internal" href="search.html"><span class="std std-ref">Search Page</span></a></p></li>
-</ul>
-</div>
-
-
-          </div>
-          
-        </div>
-      </div>
+  <div class="document">
+    
       <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
         <div class="sphinxsidebarwrapper">
-<h1 class="logo"><a href="#">Actuator Doc</a></h1>
+<p class="logo">
+  <a href="#">
+    <img class="logo" src="_static/logo.jpg" alt="Logo"/>
+    
+    <h1 class="logo logo-name">Actuator</h1>
+    
+  </a>
+</p>
 
 
 
@@ -91,6 +49,11 @@
 <li class="toctree-l1"><a class="reference internal" href="manual/key-concepts.html">Key Concepts</a></li>
 <li class="toctree-l1"><a class="reference internal" href="manual/orch-basic.html">Orchestration Basics</a></li>
 <li class="toctree-l1"><a class="reference internal" href="manual/infra-basic.html">Infra Model Basics</a></li>
+<li class="toctree-l1"><a class="reference internal" href="manual/namespace-basic.html">Namespace Model Basics</a></li>
+<li class="toctree-l1"><a class="reference internal" href="manual/config-basic.html">Config Model Basics</a></li>
+<li class="toctree-l1"><a class="reference internal" href="manual/exec-basic.html">Execute Model Basics</a></li>
+<li class="toctree-l1"><a class="reference internal" href="manual/advanced/index.html">Advanced Actuator Usage Techniques</a></li>
+<li class="toctree-l1"><a class="reference internal" href="api-ref/index.html">Actuator API Reference</a></li>
 </ul>
 
 <div class="relations">
@@ -121,13 +84,181 @@
 
         </div>
       </div>
-      <div class="clearer"></div>
-    </div>
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <div class="section" id="actuator-user-manual-and-api-reference">
+<h1>Actuator User Manual and API Reference<a class="headerlink" href="#actuator-user-manual-and-api-reference" title="Permalink to this headline">¶</a></h1>
+<div class="toctree-wrapper compound">
+<p class="caption"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="manual/overview.html">Overview</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="manual/overview.html#intro">Intro</a></li>
+<li class="toctree-l2"><a class="reference internal" href="manual/overview.html#the-four-models">The Four Models</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="manual/overview.html#infrastructure-model">Infrastructure Model</a></li>
+<li class="toctree-l3"><a class="reference internal" href="manual/overview.html#namespace-model">Namespace Model</a></li>
+<li class="toctree-l3"><a class="reference internal" href="manual/overview.html#configuration-model">Configuration Model</a></li>
+<li class="toctree-l3"><a class="reference internal" href="manual/overview.html#execution-model">Execution Model</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="manual/overview.html#basic-operational-flow">Basic Operational Flow</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="manual/key-concepts.html">Key Concepts</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="manual/key-concepts.html#model">Model</a></li>
+<li class="toctree-l2"><a class="reference internal" href="manual/key-concepts.html#component">Component</a></li>
+<li class="toctree-l2"><a class="reference internal" href="manual/key-concepts.html#model-reference">Model Reference</a></li>
+<li class="toctree-l2"><a class="reference internal" href="manual/key-concepts.html#context-expression">Context Expression</a></li>
+<li class="toctree-l2"><a class="reference internal" href="manual/key-concepts.html#orchestrator">Orchestrator</a></li>
+<li class="toctree-l2"><a class="reference internal" href="manual/key-concepts.html#proxy">Proxy</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="manual/orch-basic.html">Orchestration Basics</a></li>
+<li class="toctree-l1"><a class="reference internal" href="manual/infra-basic.html">Infra Model Basics</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="manual/infra-basic.html#a-basic-aws-infra-model">A Basic AWS Infra Model</a></li>
+<li class="toctree-l2"><a class="reference internal" href="manual/infra-basic.html#context-expressions-primer">Context Expressions Primer</a></li>
+<li class="toctree-l2"><a class="reference internal" href="manual/infra-basic.html#building-on-the-model">Building on the Model</a></li>
+<li class="toctree-l2"><a class="reference internal" href="manual/infra-basic.html#trying-it-out">Trying it out</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="manual/namespace-basic.html">Namespace Model Basics</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="manual/namespace-basic.html#a-simple-namespace">A Simple Namespace</a></li>
+<li class="toctree-l2"><a class="reference internal" href="manual/namespace-basic.html#vars">Vars</a></li>
+<li class="toctree-l2"><a class="reference internal" href="manual/namespace-basic.html#roles">Roles</a></li>
+<li class="toctree-l2"><a class="reference internal" href="manual/namespace-basic.html#model-reference-primer">Model Reference Primer</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="manual/namespace-basic.html#the-key">The <code class="docutils literal notranslate"><span class="pre">key</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="manual/namespace-basic.html#model-references-vs-context-expressions">Model References vs Context Expressions</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="manual/namespace-basic.html#modeling-intra-model-relationships">Modeling intra-model relationships</a></li>
+<li class="toctree-l3"><a class="reference internal" href="manual/namespace-basic.html#modeling-inter-model-relationships">Modeling inter-model relationships</a></li>
+<li class="toctree-l3"><a class="reference internal" href="manual/namespace-basic.html#extracting-data-from-models">Extracting data from models</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="manual/config-basic.html">Config Model Basics</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="manual/config-basic.html#declaring-tasks">Declaring tasks</a></li>
+<li class="toctree-l2"><a class="reference internal" href="manual/config-basic.html#declaring-dependencies">Declaring dependencies</a></li>
+<li class="toctree-l2"><a class="reference internal" href="manual/config-basic.html#dependency-expressions">Dependency expressions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="manual/config-basic.html#config-granularity">Config Granularity</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="manual/exec-basic.html">Execute Model Basics</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="manual/exec-basic.html#similarity-to-config-models">Similarity to Config Models</a></li>
+<li class="toctree-l2"><a class="reference internal" href="manual/exec-basic.html#running-a-system">Running a System</a></li>
+<li class="toctree-l2"><a class="reference internal" href="manual/exec-basic.html#forking-and-running-in-the-background">Forking and Running in the Background</a></li>
+<li class="toctree-l2"><a class="reference internal" href="manual/exec-basic.html#differences-between-shell-and-command-task-variants">Differences between shell and command task variants</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="manual/advanced/index.html">Advanced Actuator Usage Techniques</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="manual/advanced/wisdom-for-models.html">Wisdom for All Models</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="manual/advanced/wisdom-for-models.html#more-on-context-expressions">More on context expressions</a></li>
+<li class="toctree-l3"><a class="reference internal" href="manual/advanced/wisdom-for-models.html#base-classes-for-boilerplate">Base classes for boilerplate</a></li>
+<li class="toctree-l3"><a class="reference internal" href="manual/advanced/wisdom-for-models.html#adding-methods">Adding methods</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="manual/advanced/orch-advanced.html">Advanced Orchestrator Usage</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="manual/advanced/orch-advanced.html#event-handling">Event handling</a></li>
+<li class="toctree-l3"><a class="reference internal" href="manual/advanced/orch-advanced.html#tuning-operation">Tuning Operation</a></li>
+<li class="toctree-l3"><a class="reference internal" href="manual/advanced/orch-advanced.html#multiple-clouds">Multiple clouds</a></li>
+<li class="toctree-l3"><a class="reference internal" href="manual/advanced/orch-advanced.html#persisting-initiated-systems">Persisting initiated systems</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="manual/advanced/infra-advanced.html">Advanced Infra Modeling</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="manual/advanced/infra-advanced.html#resource-groups">Resource Groups</a></li>
+<li class="toctree-l3"><a class="reference internal" href="manual/advanced/infra-advanced.html#multiresource-and-multiresourcegroup">MultiResource and MultiResourceGroup</a></li>
+<li class="toctree-l3"><a class="reference internal" href="manual/advanced/infra-advanced.html#options">Options</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="manual/advanced/namespace-advanced.html">Advanced Namespace Modeling</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="manual/advanced/namespace-advanced.html#multiroles">MultiRoles</a></li>
+<li class="toctree-l3"><a class="reference internal" href="manual/advanced/namespace-advanced.html#rolegroup">RoleGroup</a></li>
+<li class="toctree-l3"><a class="reference internal" href="manual/advanced/namespace-advanced.html#multirolegroup">MultiRoleGroup</a></li>
+<li class="toctree-l3"><a class="reference internal" href="manual/advanced/namespace-advanced.html#more-on-namespace-structure">More on namespace structure</a></li>
+<li class="toctree-l3"><a class="reference internal" href="manual/advanced/namespace-advanced.html#inspecting-vars">Inspecting Vars</a></li>
+<li class="toctree-l3"><a class="reference internal" href="manual/advanced/namespace-advanced.html#var-references">Var references</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="manual/advanced/config-advanced.html">Advanced Config Modeling</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="manual/advanced/config-advanced.html#task-role-vs-run-from">task_role vs run_from</a></li>
+<li class="toctree-l3"><a class="reference internal" href="manual/advanced/config-advanced.html#vars-as-environment">Vars as environment</a></li>
+<li class="toctree-l3"><a class="reference internal" href="manual/advanced/config-advanced.html#options">Options</a></li>
+<li class="toctree-l3"><a class="reference internal" href="manual/advanced/config-advanced.html#config-model-tasks-and-multitasks">Config Model Tasks and MultiTasks</a></li>
+<li class="toctree-l3"><a class="reference internal" href="manual/advanced/config-advanced.html#selection-expressions-tasks-for-arbitrary-numbers-of-roles">Selection expressions– tasks for arbitrary numbers of Roles</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="manual/advanced/recipes.html">Recipes</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="manual/advanced/recipes.html#templates">Templates</a></li>
+<li class="toctree-l3"><a class="reference internal" href="manual/advanced/recipes.html#creating-a-single-var-from-a-group-of-components">Creating a single Var from a group of components</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="api-ref/index.html">Actuator API Reference</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="api-ref/actuator.html">actuator package</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api-ref/config.html">actuator.config module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="api-ref/config.html#functions">Functions</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="api-ref/config-tasks.html">actuator.config_tasks module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api-ref/execute.html">actuator.execute module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="api-ref/execute.html#functions">Functions</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="api-ref/execute-tasks.html">actuator.execute_tasks module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api-ref/infra.html">actuator.infra module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="api-ref/infra.html#functions">Functions</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="api-ref/modeling.html">actuator.modeling module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api-ref/namespace.html">actuator.namespace module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="api-ref/namespace.html#functions">Functions</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="api-ref/remote_task.html">actuator.remote_task module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="api-ref/remote_task.html#functions">Functions</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="api-ref/reporting.html">actuator.reporting module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api-ref/service.html">actuator.service module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api-ref/task.html">actuator.task module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api-ref/utils.html">actuator.utils module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api-ref/provisioners/index.html">Actuator Provisioners API Reference</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="api-ref/provisioners/aws/package.html">actuator.provisioners.aws package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api-ref/provisioners/aws/resources.html">actuator.provisioners.aws.resources module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api-ref/provisioners/azure/package.html">actuator.provisioners.aws package</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</div>
+</div>
+<div class="section" id="indices-and-tables">
+<h1>Indices and tables<a class="headerlink" href="#indices-and-tables" title="Permalink to this headline">¶</a></h1>
+<ul class="simple">
+<li><p><a class="reference internal" href="genindex.html"><span class="std std-ref">Index</span></a></p></li>
+<li><p><a class="reference internal" href="py-modindex.html"><span class="std std-ref">Module Index</span></a></p></li>
+<li><p><a class="reference internal" href="search.html"><span class="std std-ref">Search Page</span></a></p></li>
+</ul>
+</div>
+
+
+          </div>
+          
+        </div>
+      </div>
+    <div class="clearer"></div>
+  </div>
     <div class="footer">
-      &copy;2020, Incisive Technology Ltd..
+      &copy;2020, Incisive Technology Ltd.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 3.0.3</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 3.0.4</a>
       &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
       
       |
