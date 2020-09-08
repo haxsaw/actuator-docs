@@ -158,6 +158,8 @@ bringing up early to cover their frequent use subtleties of their semantic.
   associate some private data with this particular orchestrator which will be persisted along with all other data
   if the orchestrator is saved to JSON. Bear in mind that all keys and value must be JSON compatible.
 
+.. _multi-cloud-proxies:
+
 ===============
 Multiple clouds
 ===============

@@ -131,14 +131,14 @@ code, in a manner similar to various declarative systems for ORMs
 <li><p>and can be factored into collections of reusable sets of
 declarative components</p></li>
 </ul>
-<p>And while each model provides capabilties on their own, they can be
+<p>And while each model provides capabilities on their own, they can be
 inter-related to not only exchange information, but to allow instances
 of a model to tailor the content of other models.</p>
-<p>Actuator uses the Python <em>class</em> construct as the basis for defining a model, and
+<p>Actuator uses the Python <code class="docutils literal notranslate"><span class="pre">class</span></code> statement as the basis for defining a model, and
 the class’s contents serves as a logical description of the item being modeled; for
 instance a collection of infrastructure resources for a system. These
 model classes can have both static and dynamic aspects, allowing them to be used to describe systems
-that include fixed assets as well as dynamic cloud-based ones..</p>
+that include fixed assets as well as dynamic cloud-based ones.</p>
 </div>
 <div class="section" id="the-four-models">
 <h2>The Four Models<a class="headerlink" href="#the-four-models" title="Permalink to this headline">¶</a></h2>
@@ -160,7 +160,7 @@ held by other models, and these references can be subsequently evaluated
 against an instance of the infra model to extract data from that
 particular instance. For example, a namespace model may need the IP
 address from a particular server in an infra model, and so the namespace
-model may hold a reference into the infra model for the IP address
+model may hold a reference into the infra model to the IP address
 attribute that yields the actual IP address of a provisioned server when
 an instance of that infra model is provisioned.</p>
 </div>
@@ -169,7 +169,7 @@ an instance of that infra model is provisioned.</p>
 <p>The <em>namespace model</em> defines a hierarchical namespace based around system
 <em>roles</em> which defines all the names that are important to the
 configuration and run-time operation of a system. A role can be
-thought of as a software component of a system; for instance, a system
+thought of as a logical software component of a system; for instance, a system
 might have a database role, an app server role, or a grid node role.
 Names in the namespace can be used for a variety of purposes, such as
 setting up environment variables, or establishing name-value pairs for
@@ -204,10 +204,10 @@ particular startup order can be enforced.</p>
 <p>A logically related grouping of an infra, namespace, config, and execute models is called a <strong>model set</strong>.</p>
 </div>
 <p>Actuator then provides a number of support tools that can take instances
-of these models and processes their information, turning it into
+of these models and processes their information, turning them into
 actions in the cloud. So for instance, an orchestrator can take an infra
 model instance and manage the process of provisioning the infra it
-describes, and another can marry that instance with a namespace to fully
+describes and marry that instance with a namespace to fully
 populate a namespace model instance so that the configurator can carry
 out configuration tasks, and so on.</p>
 </div>
@@ -219,9 +219,10 @@ out configuration tasks, and so on.</p>
 <li><p><em>Create the required models</em>. The infrastructure model can be used alone with no other models, but to
 use a configuration or execution model, you must also have a namespace model. Which you need depends on what you’re
 trying to accomplish.</p></li>
-<li><p><em>Create the appropriate proxy</em>. The provisioner proxy object performs two tasks: it holds the credentials used to
-communicate with particular cloud provider, and it also provides various factory methods to yield API objects that
-facilitate communication with the cloud’s API.</p></li>
+<li><p><em>Create the appropriate proxy</em>. The <a class="reference internal" href="advanced/orch-advanced.html#multi-cloud-proxies"><span class="std std-ref">provisioner proxy object</span></a> performs two tasks: it
+holds the credentials used to
+authenticate with particular cloud provider, and it also provides various factory methods to yield API objects that
+facilitate communication using the cloud’s API.</p></li>
 <li><p><em>Create instances of the models</em>. These are just Python classes, and so you create instances of them in the normal
 manner you would for instance creation.</p></li>
 <li><p><em>Create an orchestrator</em>, providing it the model instances and the proxy.</p></li>

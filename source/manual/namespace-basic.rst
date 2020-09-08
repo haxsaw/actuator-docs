@@ -18,7 +18,7 @@ A namespace model has four aspects. It provides the means to:
 1. Define the logical Roles of a system.
 2. Define the relationships between logical Roles and hosts in the infra model where the Roles are to execute.
 3. Arrange the Roles in a meaningful hierarchy.
-4. Establish names within the hierarchy whose values will impact configuration activities and the operation of the
+4. Establish names (Vars) within the hierarchy whose values will impact configuration activities and the operation of the
    Roles.
 
 Together, Vars and Roles provide considerable representative power in describing namespaces, but before we dig into
@@ -28,10 +28,12 @@ those details, let's look at the basics of creating a namespace model.
 A Simple Namespace
 ==================
 
-Similar to infra models, `namespace models` are created by defining a subclass of actuator.namespace.NamespaceModel and
-filling it with Roles and Vars. Roles are associated to a IP addressable resource, typically defined in the infra model
-(but can actually just be a hard-coded IP address), which indicates where the Role is to be configured and run, and Vars
-which are name-value pairs that can be established at the model level, or attached to a specific Role.
+Similar to infra models, `namespace models` are created by defining a subclass of ``actuator.namespace.NamespaceModel``
+and
+filling it with ``Role`` and ``Var`` components. `Roles` are associated to an IP addressable resource, typically defined
+in the infra model
+(but can actually just be a hard-coded IP address), which indicates where the Role is to be configured and run
+`Vars` are name-value pairs that can be established at the model level, or attached to a specific Role.
 
 Here's a simple example that demonstrates the basic features of a namespace. It will model two Roles, an app server
 and a computation engine, and use the MyInfraModel infra model from above for certain values:
@@ -71,7 +73,7 @@ Though this is fairly simple, there is actually a lot going on here, so we'll ha
 Vars
 ====
 
-As mentioned before, Vars are used to create symobolic names with associated values that can be associated with Roles
+As mentioned before, `Vars` are used to create symobolic names with associated values that can be attached to Roles
 or namespace models, and are used in the processing of config and exec models.
 
 In this example, the ``with_variables(...)`` call is used to declare Vars that are to apply to the model globally.
@@ -81,15 +83,14 @@ are only visible to the Role, and if a Role's Var has the same name (first argum
 the Role's Var definition takes precedence.
 
 There are several different Vars being created that illustrate different uses of Vars. A Var is created with the
-Var() class, the first argument being the name of the Var, the second being the value. First, consider this Var:
+``Var`` class, the first argument being the name of the Var, the second being the value. First, consider this Var:
 
 .. code:: python
 
-    Var("COMP_SERVER_PORT", '8081',
-        in_env=False),
+    Var("COMP_SERVER_PORT", '8081', in_env=False)
 
-...which is setting the Var with the name COMP_SERVER_PORT to '8081'. This shows that even if a Var value will be used
-as a number, it must be captured as a string. It also has the final keyword argument ``in_env=False``, which will be
+...which is setting the Var with the name COMP_SERVER_PORT to '8081'. *This shows that even if a Var value will be used
+as a number, it must be defined with a string.* It also has the final keyword argument ``in_env=False``, which will be
 used by config and exec models to determine if a Var should be part of a task's environment or not. This is
 saying that this variable should not become an environment variable for any task (the default is to include
 a Var in any task environment).
@@ -108,9 +109,7 @@ Another different Var is:
 
 .. code:: python
 
-    Var("COMP_SERVER_HOST",
-        MyInfraModel.server.get_ip,
-        in_env=False)
+    Var("COMP_SERVER_HOST", MyInfraModel.server.get_ip, in_env=False)
 
 This Var is defining the COMP_SERVER_HOST Var, but the value isn't a string-- in Actuator, this is called a
 `model reference`. In this case, the reference is to a method on the server resource in the MyInfraModel model that
@@ -127,7 +126,7 @@ We later have this Var:
 
 ...which involves a context expression as the value. This context expression is saying that when a component is
 processed, either a Role or the model itself, return the component's name. So depending on which component asks the
-question, thisexpression will yield a different value. For the namespace model itself it will be the name of the
+question, this expression will yield a different value. For the namespace model itself it will be the name of the
 namespace model instance. For one of the Roles, it will be the Role's name (the first argument to ``Role()``).
 
 Finally, we have this Var:
@@ -138,7 +137,7 @@ Finally, we have this Var:
 
 ...which defines the Var ROLE_HOME as a string that uses `replacement parameters`. A replacement parameter is a Var
 name enclosed within the delimiter ``!{ }``, which tells Actuator to replace the entire string with the value of the
-Var named inside the delimeter. In this case, ROLE_NAME will be the concatenation of the value of APP_HOME_DIR (when
+Var named inside the delimeter. In this case, ROLE_HOME will be the concatenation of the value of APP_HOME_DIR (when
 it is specified) with that of ROLE_NAME (which will be the value of the Role or namespace model instance evaluating
 the Var). This provides a mechanism to create customised Var values based on other Vars, model reference values, and
 context expressions.
@@ -147,7 +146,11 @@ context expressions.
 Roles
 =====
 
-Next, let's consider the Roles that are declared. First we have:
+As previously mentioned, a `Role` is a logical component of a system, one that generally is associated with something
+that can be reached at an IP address. A Role can name a single such resource, or can be the name for a group of
+identical resources.
+
+Let's consider the Roles that are declared in the example above. First we have:
 
 .. code:: python
 
@@ -156,7 +159,7 @@ Next, let's consider the Roles that are declared. First we have:
 
 ...which defines the ``compute_server`` Role in the model (which has the name 'my_compute_server'). Also note the
 keyword argument ``host_ref``, which is set to ``MyInfraModel.server``. This tells Actuator that this Role will be
-realised on the 'server' resoruce in MyInfraModel. The value of host_ref may also be a string with an FDQN or
+realised on the 'server' resource in MyInfraModel. The value of host_ref may also be a string with an FQDN or
 IP address of the host for the Role, or it may also be a model reference to a so-called StaticServer resource
 in an infra model class (more on those later).
 
@@ -164,18 +167,17 @@ Next, we declare the app_server Role:
 
 .. code:: python
 
-    app_server = Role("app_server",
-                      host_ref=MyInfraModel.server,
-                      variables=(Var("ROLE_NAME", "MyApp"),
-                                 Var("PRIVATE", "mind yer bidnizz", in_env=False)))
+  app_server = Role("app_server", host_ref=MyInfraModel.server,
+                    variables=(Var("ROLE_NAME", "MyApp"),
+                               Var("PRIVATE", "mind yer bidnizz", in_env=False)))
 
 
 Besides a name and host_ref, this Role defines its own Vars. One, "ROLE_NAME", has the same name as a Var defined
 at the global model level with ``with_variables()``, and thus overrides the value of that Var with its own hard-coded
-value of "MyApp". It also adds a new Var, "PRIVATE", which only the app_server component can "see". This is because
-any component's set of visible Vars is the union of the ones more global to it plus the ones that are defined on the
-component directly. In this way, individual Roles can define Vars that only the Role will have visibility of, and Vars
-that should impact the entire namespace can be defined globally for the namespace.
+value of "MyApp". It also adds a new Var, "PRIVATE", which only the app_server component can access. This is because
+any Role's set of visible Vars is the union of the ones more global to it plus the ones that are defined on the
+Role directly. In this way, individual Roles can define Vars to which only the Role will have visibility, and Vars
+that should impact the entire namespace can be defined globally in the namespace.
 
 
 ======================
@@ -187,20 +189,22 @@ that they cover some of the same territory. Since these entities have different 
 capabilities, we'll take some time here to discuss model references in some detail, and then do some comparisons
 with context expressions.
 
-In Actuator, a `model reference` is an object that references a specific component (or a component's attributes)
-within an Actuator model. The component being referenced not have significant data in when the reference is created;
-model references provide a way to 'point to' where a data item will appear at some later time so that another
+In Actuator, a `model reference` is an object that references a specific component (or a component's attribute)
+within an Actuator model. The component being referenced does not have to have significant data in when the reference
+is created;
+model references provide a way to 'point to' or 'refer to' where a data item will appear at some later time so that
+another
 component can fetch it when needed. References also contain information as to where the data item is coming from,
 which allows Actuator to determine what components depend on other components.
 
 Model references are automatically generated when you attempt to access an Actuator component through a model class or
 an instance of a model class. These references can then be used as arguments to other components, and when an
 orchestrator is asked to begin its work, it reviews all the model references and builds a dependency graph that
-reflects what components require values from other components. Hence, model references can be used to express how
-to connect components together across models.
+reflects what components require values from other components. Hence, model references provide the means for
+Actuator to construct an execution plan for use in orchestrating the stand-up of a model.
 
 As an example, consider this fragment of the MyInfraModel infrastructure model; for this example, we add a class
-attribute that is a datetime object for the time of the import:
+attribute that is a datetime object for the time of the import called ``now``:
 
 .. code:: python
 
@@ -258,12 +262,12 @@ The observant reader may have noticed that ``MyInfraModel.vpc`` results in a Mod
 results in a ModelInstanceReference when we access ``infra.vpc``. These two are slightly different in capability and are
 used in different circumstances:
 
--  ModelReferences are generated when you access Actuator components through a **model** and are used for modeling
+-  **ModelReferences** are generated when you access Actuator components through a **model** and are used for modeling
    purposes.
--  ModelInstanceReferences are generated when you access Actuator compoents through a **model instance** and are
+-  **ModelInstanceReferences** are generated when you access Actuator components through a **model instance** and are
    not used in modeling, but for orchestration and acquiring data from models.
 
-ModelInstanceReferencs can be generated from a corresponding ModelReference via an instance of a model, but this is all
+ModelInstanceReferences can be generated from a corresponding ModelReference via an instance of a model, but this is all
 rather advanced usage and will be covered in more detail in the advanced sections of the doc.
 
 The ``key``
@@ -292,8 +296,8 @@ Modeling intra-model relationships
 ----------------------------------
 
 This is when a component in a model needs to refer to another component of the same model, such as shown above when
-the Subnet resource needed to refer to the VPC resource. It isn't possible even create a model references for these
-kinds of relationships: because it requires a model class to create a model reference, you can't create a model
+the Subnet resource needed to refer to the VPC resource. It isn't possible to create a model reference for these
+kinds of relationships; because it requires a model class to create a model reference, you can't create a model
 reference involving a model class that you are in the midst of defining. So the **only** way to make relationships
 between components of the same model class is to use context expressions.
 
@@ -312,7 +316,7 @@ later in the docs). Context expressions are also *context aware*, and model refe
 context expressions to yield results that model references can't. So some kinds of inter-model relationships demand
 the use of context expressions.
 
-Addtionally, context expressions couple models more loosely than model references. For example, if a namespace
+Additionally, context expressions couple models more loosely than model references. For example, if a namespace
 model only uses context expressions to model Role host_ref relationships to an infra model, you can actually swap
 out a model that uses resources for AWS with one that uses Azure resources, as long as the names in both infra models
 match and map to semantically equivalent resources (a server in one is a server in another). Model references tie
@@ -322,12 +326,12 @@ then you'll want to use context expressions for inter-model relationship modelin
 Extracting data from models
 ---------------------------
 
-No contest here: model instance references are the *only way* to fetch data that is contained in a model instance in
+No contest here: model instance references are the **only way** to fetch data that is contained in a model instance in
 user applications that use Actuator models. Context expressions simply have no capacity to return data from a model--
 they are solely designed to express relationships. Internally, Actuator turns context expressions into model references
 so that the data being referred to can be acquired. And in fact, user manipulation of model classes automatically
-yields model references on which ``value()`` is invoked to acquire the unlying data behind the reference. So for
-activity beyond modeling that involves using Actuator model data, expect to be working with model references.
+yields model references on which ``value()`` is invoked to acquire the underlying data behind the reference. So for
+activities beyond modeling that involve using Actuator model data, expect to be working with model references.
 
 A good rule of thumb to follow is: use context expressions consistently for modeling unless you have reason not to,
 and expect to work with model references for everything else.

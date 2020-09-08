@@ -32,15 +32,15 @@ code, in a manner similar to various declarative systems for ORMs
 -  and can be factored into collections of reusable sets of
    declarative components
 
-And while each model provides capabilties on their own, they can be
+And while each model provides capabilities on their own, they can be
 inter-related to not only exchange information, but to allow instances
 of a model to tailor the content of other models.
 
-Actuator uses the Python *class* construct as the basis for defining a model, and
+Actuator uses the Python ``class`` statement as the basis for defining a model, and
 the class's contents serves as a logical description of the item being modeled; for
 instance a collection of infrastructure resources for a system. These
 model classes can have both static and dynamic aspects, allowing them to be used to describe systems
-that include fixed assets as well as dynamic cloud-based ones..
+that include fixed assets as well as dynamic cloud-based ones.
 
 ================
 The Four Models
@@ -66,7 +66,7 @@ held by other models, and these references can be subsequently evaluated
 against an instance of the infra model to extract data from that
 particular instance. For example, a namespace model may need the IP
 address from a particular server in an infra model, and so the namespace
-model may hold a reference into the infra model for the IP address
+model may hold a reference into the infra model to the IP address
 attribute that yields the actual IP address of a provisioned server when
 an instance of that infra model is provisioned.
 
@@ -76,7 +76,7 @@ Namespace Model
 The *namespace model* defines a hierarchical namespace based around system
 *roles* which defines all the names that are important to the
 configuration and run-time operation of a system. A role can be
-thought of as a software component of a system; for instance, a system
+thought of as a logical software component of a system; for instance, a system
 might have a database role, an app server role, or a grid node role.
 Names in the namespace can be used for a variety of purposes, such as
 setting up environment variables, or establishing name-value pairs for
@@ -113,10 +113,10 @@ particular startup order can be enforced.
     A logically related grouping of an infra, namespace, config, and execute models is called a **model set**.
 
 Actuator then provides a number of support tools that can take instances
-of these models and processes their information, turning it into
+of these models and processes their information, turning them into
 actions in the cloud. So for instance, an orchestrator can take an infra
 model instance and manage the process of provisioning the infra it
-describes, and another can marry that instance with a namespace to fully
+describes and marry that instance with a namespace to fully
 populate a namespace model instance so that the configurator can carry
 out configuration tasks, and so on.
 
@@ -129,9 +129,10 @@ Using Actuator generally involves the following steps:
 1. *Create the required models*. The infrastructure model can be used alone with no other models, but to
    use a configuration or execution model, you must also have a namespace model. Which you need depends on what you're
    trying to accomplish.
-2. *Create the appropriate proxy*. The provisioner proxy object performs two tasks: it holds the credentials used to
-   communicate with particular cloud provider, and it also provides various factory methods to yield API objects that
-   facilitate communication with the cloud's API.
+2. *Create the appropriate proxy*. The :ref:`provisioner proxy object<multi-cloud-proxies>` performs two tasks: it
+   holds the credentials used to
+   authenticate with particular cloud provider, and it also provides various factory methods to yield API objects that
+   facilitate communication using the cloud's API.
 3. *Create instances of the models*. These are just Python classes, and so you create instances of them in the normal
    manner you would for instance creation.
 4. *Create an orchestrator*, providing it the model instances and the proxy.

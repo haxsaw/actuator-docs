@@ -14,7 +14,7 @@ Infra Model Basics
 
 Although the namespace model is the one that is central in an
 Actuator model set, it actually helps to start with the infra model as building an infra model first can yield
-immediate benefits. The infra model describes all the dynamically
+immediately observable results. The infra model describes all the dynamically
 provisionable and static infra resources for a system and describes how they relate to each
 other. The model can define groups of resources and resources that can
 be repeated an arbitrary number of times, allowing them to be nested in
@@ -24,10 +24,10 @@ very complex configurations.
 A Basic AWS Infra Model
 =======================
 
-In Actuator, an infra model is created by defining a subclass of actuator.infra.InfraModel and declaring its
+In Actuator, an infra model is created by defining a subclass of ``actuator.infra.InfraModel`` and declaring its
 components.
 
-The following shows the basic pieces needed to create a single-server infra model on EC2 using a virtual private
+The following shows the basic pieces needed to create a single-server infra model on EC2 using a custom virtual private
 cloud on AWS. We're going to start by ignoring providing a way to access the instance just to make the base code
 simpler:
 
@@ -59,7 +59,7 @@ simpler:
                   dest_cidr_block="0.0.0.0/0",
                   gateway=ctxt.model.igw)
 
-        # the following gets us our specific server, network interface, and
+        # the following gets us our specific network interface and server, and
         # gives the interface a floating public IP we can reach
         ni = NetworkInterface("server-ni",
                               ctxt.model.sn,
@@ -73,13 +73,15 @@ simpler:
                               network_interface=ctxt.model.ni)
 
 Like with many clouds, there's a lot of IaaS boilerplate that needs to be added to a model to be able to reach a
-server from the public internet. Actuator provides tools to hide these details if you wish, and those are covered
-in the Infra Models section under More Advanced Uses. But for now, we'll consider the details.
+server from the public internet if you don't use the default VPC. Actuator provides tools to hide these details if you
+wish, and those are covered
+in the :doc:`advanced/infra-advanced` section under More Advanced Uses. But for now, we'll consider the details.
 
-The basic networking setup involves the creation of VPC, Subnet, InternetGateway, RouteTable, and Route resources
+The basic networking setup involves the creation of ``VPC``, ``Subnet``, ``InternetGateway``, ``RouteTable,``
+and ``Route`` resources
 in the model. The order of creation of these resources isn't important, as Actuator will sort out what depends on
 what. The important aspect to notice is that in creating some of the resources, there are arguments that start
-with ``ctxt.``. These are `context expressions`, and are used to express the relationships between resources in a
+with ``ctxt``. These are `context expressions`, and are used to express the relationships between resources in a
 number of different circumstances, in this case in an unfinished model. This is an important enough topic to
 warrant a short digression on context expressions in some detail.
 
@@ -87,7 +89,7 @@ warrant a short digression on context expressions in some detail.
 Context Expressions Primer
 ==========================
 
-In Actuator, an expression that begins ``ctxt.`` signals the start of a `context expression`. Context expressions are
+In Actuator, an expression that begins ``ctxt`` signals the start of a `context expression`. Context expressions are
 very powerful tools for creating linkages between components in a loosely-coupled way. They essentially describe a
 navigation path though a set of objects such as resources, tasks, or roles, and when actually evaluated they have
 some knowledge of the location or `context` in which they are evaluated.
@@ -115,7 +117,7 @@ resource is processed by Actuator during orchestration, the context is set up as
 - ``ctxt.nexus`` is the gateway to the other models in the model group (namespace, config, etc)
 
 So when the Subnet resource is processed, the context expression ``ctxt.model.vpc`` is evaluated, and this results in
-accessing the model instance's vpc attribute in that instance, which is requried in order to create an AWS Subnet.
+accessing the model instance's vpc attribute in that instance, which is required in order to create an AWS Subnet.
 
 Context expressions can be assigned to variables and then further used to create new context expressions. This is handy
 if a construction begins to get a bit long and unwieldy. For example you could put in your code:
@@ -135,7 +137,7 @@ Thus giving you a way to abbreviate a longer context expression.
     -  *ccomp* is the same as ctxt.comp
     -  *cparent* and *cpar* and *cont* and *sibling* are the same as ctxt.comp.container
     -  *cmodel* and *cmod* are the same as ctxt.model
-    -  *cnexus* and *cnex* are the same as ctxt.nexus
+    -  *cnexus* and *cnex* are the same as ctxt.nexus (more on the nexus :ref:`here<the-nexus>`)
 
 .. note::
     Whenever a model instance is created, new instances of all the components are created as well. Otherwise different
@@ -217,7 +219,7 @@ ping_rule) components to the model.
 
 .. note::
     The public part of the key-pair specified in the KeyPair component's creation was made with ssh-keygen. Actuator
-    comes with keypair you can use for experimentation, actuator-dev-key(.pub), but your own keypair should be
+    comes with a keypair you can use for experimentation, actuator-dev-key(.pub), but your own keypair should be
     generated for development and production uses. Keypairs should not have a password to use; Actuator currently
     doesn't support password protected keys.
 
@@ -230,5 +232,5 @@ Trying it out
 =============
 
 Using the orchestrator we built in :doc:`orch-basic`, we can create an instance of the server in AWS. If you put the
-above model code into a Python module my_models.py, you can then run the code and see you instance get built on AWS,
+above model code into a Python module my_models.py, you can then run the code and see your instance get built on AWS,
 and also have Actuator tear the instance down.

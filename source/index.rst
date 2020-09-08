@@ -21,7 +21,6 @@ Actuator User Manual and API Reference
    api-ref/index
 
 
-
 Indices and tables
 ==================
 

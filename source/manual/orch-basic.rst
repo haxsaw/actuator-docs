@@ -15,7 +15,7 @@ Orchestration Basics
     Key names to import: OpenStackProvisionerProxy (to support provisioning Openstack infra resources)
 
 Although not part of modelling, you can't get Actuator to do any provisioning without an orchestrator (although you can
-do lots of other things with models), so we'll start with going over ochestrator basics so you have something to test
+do lots of other things with models), so we'll start by going over orchestrator basics so you have something to test
 models with.
 
 Orchestration brings all of the models together and manages their processing in order to provision, configure and
@@ -23,12 +23,13 @@ execute an instance of the system being modeled. Orchestration is flexible in th
 that's required; for instance, if you only need to have infra provisioned you can simply supply the infra model and let
 the orchestrator handle that, or alternatively if you have a namespace that's populated with fixed IP/hostnames for
 host_ref values for all Roles, you can have the orchestrator manage just the configuration tasks against the set of
-hosts in the namespace model. This allows you to use the orchestrator in variety of circumstances, such as config
+hosts in the namespace model. This allows you to use the orchestrator in a variety of circumstances, such as config
 model development or provisioning of infra for other purposes, as well as standing up whole systems.
 
 The orchestrator is an instance of the ``actuator.ActuatorOrchestration`` class. You give it a
-number of different models as keyword arguments as well as a list of provisioners for the resources in the infra model,
-and then ask it to 'initiate' the system the models represent.
+number of different models as keyword arguments as well as one or more provisioner proxies for the resources in the
+infra model,
+and then ask it to 'initiate' the system that the models represent.
 
 The following Python code shows a simple example of using an AWS proxy to orchestrate the creation of an infra
 model named MyInfraModel in the my_models.py module. To keep things simple, error checking has been removed:
@@ -60,7 +61,7 @@ model named MyInfraModel in the my_models.py module. To keep things simple, erro
     _ = sys.stdin.readline()
     ao.teardown_system()
 
-For the above to work, you'll obviously need an AWS account and credentials that has permission to create resources
+For the above to work, you'll obviously need an AWS account and credentials that have permission to create resources
 in the region named with ``default_region``.
 
 The orchestrator method ``initiate_system()`` blocks until all work specified in the models is complete, and returns

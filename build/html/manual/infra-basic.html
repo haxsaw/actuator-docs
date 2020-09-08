@@ -111,16 +111,16 @@ NetworkInterface, PublicIP, AWSInstance</p>
 </dl>
 <p>Although the namespace model is the one that is central in an
 Actuator model set, it actually helps to start with the infra model as building an infra model first can yield
-immediate benefits. The infra model describes all the dynamically
+immediately observable results. The infra model describes all the dynamically
 provisionable and static infra resources for a system and describes how they relate to each
 other. The model can define groups of resources and resources that can
 be repeated an arbitrary number of times, allowing them to be nested in
 very complex configurations.</p>
 <div class="section" id="a-basic-aws-infra-model">
 <h2>A Basic AWS Infra Model<a class="headerlink" href="#a-basic-aws-infra-model" title="Permalink to this headline">¶</a></h2>
-<p>In Actuator, an infra model is created by defining a subclass of actuator.infra.InfraModel and declaring its
+<p>In Actuator, an infra model is created by defining a subclass of <code class="docutils literal notranslate"><span class="pre">actuator.infra.InfraModel</span></code> and declaring its
 components.</p>
-<p>The following shows the basic pieces needed to create a single-server infra model on EC2 using a virtual private
+<p>The following shows the basic pieces needed to create a single-server infra model on EC2 using a custom virtual private
 cloud on AWS. We’re going to start by ignoring providing a way to access the instance just to make the base code
 simpler:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">actuator</span> <span class="kn">import</span> <span class="n">ctxt</span>
@@ -149,7 +149,7 @@ simpler:</p>
               <span class="n">dest_cidr_block</span><span class="o">=</span><span class="s2">&quot;0.0.0.0/0&quot;</span><span class="p">,</span>
               <span class="n">gateway</span><span class="o">=</span><span class="n">ctxt</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">igw</span><span class="p">)</span>
 
-    <span class="c1"># the following gets us our specific server, network interface, and</span>
+    <span class="c1"># the following gets us our specific network interface and server, and</span>
     <span class="c1"># gives the interface a floating public IP we can reach</span>
     <span class="n">ni</span> <span class="o">=</span> <span class="n">NetworkInterface</span><span class="p">(</span><span class="s2">&quot;server-ni&quot;</span><span class="p">,</span>
                           <span class="n">ctxt</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">sn</span><span class="p">,</span>
@@ -164,18 +164,20 @@ simpler:</p>
 </pre></div>
 </div>
 <p>Like with many clouds, there’s a lot of IaaS boilerplate that needs to be added to a model to be able to reach a
-server from the public internet. Actuator provides tools to hide these details if you wish, and those are covered
-in the Infra Models section under More Advanced Uses. But for now, we’ll consider the details.</p>
-<p>The basic networking setup involves the creation of VPC, Subnet, InternetGateway, RouteTable, and Route resources
+server from the public internet if you don’t use the default VPC. Actuator provides tools to hide these details if you
+wish, and those are covered
+in the <a class="reference internal" href="advanced/infra-advanced.html"><span class="doc">Advanced Infra Modeling</span></a> section under More Advanced Uses. But for now, we’ll consider the details.</p>
+<p>The basic networking setup involves the creation of <code class="docutils literal notranslate"><span class="pre">VPC</span></code>, <code class="docutils literal notranslate"><span class="pre">Subnet</span></code>, <code class="docutils literal notranslate"><span class="pre">InternetGateway</span></code>, <code class="docutils literal notranslate"><span class="pre">RouteTable,</span></code>
+and <code class="docutils literal notranslate"><span class="pre">Route</span></code> resources
 in the model. The order of creation of these resources isn’t important, as Actuator will sort out what depends on
 what. The important aspect to notice is that in creating some of the resources, there are arguments that start
-with <code class="docutils literal notranslate"><span class="pre">ctxt.</span></code>. These are <cite>context expressions</cite>, and are used to express the relationships between resources in a
+with <code class="docutils literal notranslate"><span class="pre">ctxt</span></code>. These are <cite>context expressions</cite>, and are used to express the relationships between resources in a
 number of different circumstances, in this case in an unfinished model. This is an important enough topic to
 warrant a short digression on context expressions in some detail.</p>
 </div>
 <div class="section" id="context-expressions-primer">
 <h2>Context Expressions Primer<a class="headerlink" href="#context-expressions-primer" title="Permalink to this headline">¶</a></h2>
-<p>In Actuator, an expression that begins <code class="docutils literal notranslate"><span class="pre">ctxt.</span></code> signals the start of a <cite>context expression</cite>. Context expressions are
+<p>In Actuator, an expression that begins <code class="docutils literal notranslate"><span class="pre">ctxt</span></code> signals the start of a <cite>context expression</cite>. Context expressions are
 very powerful tools for creating linkages between components in a loosely-coupled way. They essentially describe a
 navigation path though a set of objects such as resources, tasks, or roles, and when actually evaluated they have
 some knowledge of the location or <cite>context</cite> in which they are evaluated.</p>
@@ -201,7 +203,7 @@ resource is processed by Actuator during orchestration, the context is set up as
 <li><p><code class="docutils literal notranslate"><span class="pre">ctxt.nexus</span></code> is the gateway to the other models in the model group (namespace, config, etc)</p></li>
 </ul>
 <p>So when the Subnet resource is processed, the context expression <code class="docutils literal notranslate"><span class="pre">ctxt.model.vpc</span></code> is evaluated, and this results in
-accessing the model instance’s vpc attribute in that instance, which is requried in order to create an AWS Subnet.</p>
+accessing the model instance’s vpc attribute in that instance, which is required in order to create an AWS Subnet.</p>
 <p>Context expressions can be assigned to variables and then further used to create new context expressions. This is handy
 if a construction begins to get a bit long and unwieldy. For example you could put in your code:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">cmod</span> <span class="o">=</span> <span class="n">ctxt</span><span class="o">.</span><span class="n">model</span>
@@ -218,7 +220,7 @@ if a construction begins to get a bit long and unwieldy. For example you could p
 <li><p><em>ccomp</em> is the same as ctxt.comp</p></li>
 <li><p><em>cparent</em> and <em>cpar</em> and <em>cont</em> and <em>sibling</em> are the same as ctxt.comp.container</p></li>
 <li><p><em>cmodel</em> and <em>cmod</em> are the same as ctxt.model</p></li>
-<li><p><em>cnexus</em> and <em>cnex</em> are the same as ctxt.nexus</p></li>
+<li><p><em>cnexus</em> and <em>cnex</em> are the same as ctxt.nexus (more on the nexus <a class="reference internal" href="advanced/wisdom-for-models.html#the-nexus"><span class="std std-ref">here</span></a>)</p></li>
 </ul>
 </div>
 <div class="admonition note">
@@ -298,7 +300,7 @@ ping_rule) components to the model.</p>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <p>The public part of the key-pair specified in the KeyPair component’s creation was made with ssh-keygen. Actuator
-comes with keypair you can use for experimentation, actuator-dev-key(.pub), but your own keypair should be
+comes with a keypair you can use for experimentation, actuator-dev-key(.pub), but your own keypair should be
 generated for development and production uses. Keypairs should not have a password to use; Actuator currently
 doesn’t support password protected keys.</p>
 </div>
@@ -311,7 +313,7 @@ put content on hosts. So a security group rule that allows ssh from a known loca
 <div class="section" id="trying-it-out">
 <h2>Trying it out<a class="headerlink" href="#trying-it-out" title="Permalink to this headline">¶</a></h2>
 <p>Using the orchestrator we built in <a class="reference internal" href="orch-basic.html"><span class="doc">Orchestration Basics</span></a>, we can create an instance of the server in AWS. If you put the
-above model code into a Python module my_models.py, you can then run the code and see you instance get built on AWS,
+above model code into a Python module my_models.py, you can then run the code and see your instance get built on AWS,
 and also have Actuator tear the instance down.</p>
 </div>
 </div>

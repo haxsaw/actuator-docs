@@ -41,6 +41,8 @@ more importantly, you might be interested in the component that contains the cur
 constructs that is described in the advanced section on Actuator, then ``ctxt.comp.container`` will be the grouping
 construct. You can then reach sibling components within the container.
 
+.. _the-nexus:
+
 The nexus
 ---------
 
